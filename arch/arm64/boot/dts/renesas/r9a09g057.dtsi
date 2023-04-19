@@ -1042,6 +1042,26 @@
 			status = "disabled";
 		};
 
+		tsu0: thermal@11000000 {
+			compatible = "renesas,tsu-r9a09g057";
+			reg = <0 0x11000000 0 0x1000>;
+			clocks = <&cpg CPG_MOD R9A09G057_TSU0_PCLK>;
+			resets = <&cpg R9A09G057_TSU0_PRESETN>;
+			power-domains = <&cpg>;
+			tsu,channel = <0>;
+			#thermal-sensor-cells = <1>;
+		};
+
+		tsu1: thermal@14002000 {
+			compatible = "renesas,tsu-r9a09g057";
+			reg = <0 0x14002000 0 0x1000>;
+			clocks = <&cpg CPG_MOD R9A09G057_TSU1_PCLK>;
+			resets = <&cpg R9A09G057_TSU1_PRESETN>;
+			power-domains = <&cpg>;
+			tsu,channel = <1>;
+			#thermal-sensor-cells = <1>;
+		};
+
 		ohci0: usb@15800000 {
 			compatible = "generic-ohci";
 			reg = <0 0x15800000 0 0x100>;
@@ -2258,6 +2278,45 @@
 					interrupts = <GIC_SPI 901 IRQ_TYPE_LEVEL_HIGH>;
 					dmas = <&dmac1 0x051D9E>, <&dmac2 0x041D9D>;
 					dma-names = "tx", "rx";
+				};
+			};
+		};
+	};
+
+	thermal-zones {
+		emergency {
+			polling-delay = <1000>;
+			on-temperature = <110000>;
+			off-temperature = <95000>;
+			target_cpus =   <&cpu1 &cpu2 &cpu3>;
+			status = "disabled";
+		};
+
+		sensor_thermal0: sensor-thermal0 {
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+			thermal-sensors = <&tsu0 0>;
+
+			trips {
+				sensor0_crit: sensor0-crit {
+					temperature = <120000>;
+					hysteresis = <1000>;
+					type = "critical";
+				};
+
+			};
+		};
+
+		sensor_thermal1: sensor-thermal1 {
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+			thermal-sensors = <&tsu1 0>;
+
+			trips {
+				sensor1_crit: sensor1-crit {
+					temperature = <120000>;
+					hysteresis = <1000>;
+					type = "critical";
 				};
 			};
 		};
