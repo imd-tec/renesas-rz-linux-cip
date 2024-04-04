@@ -166,6 +166,17 @@
 		states = <3300000 0 1800000 1>;
 	};
 
+	hdmi-out {
+		compatible = "hdmi-connector";
+		type = "d";
+
+		port {
+			hdmi_con_out: endpoint {
+				remote-endpoint = <&adv7533_out>;
+			};
+		};
+	};
+
 	clk_ext_camera: clk_ext_camera {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
@@ -603,11 +614,38 @@
 
 	status = "okay";
 
-	// TODO: DSI port?
-
 	mmc5633@30 {
 		compatible = "memsic,mmc5633";
 		reg = <0x30>;
+	};
+
+	adv7533: hdmi@39 {
+		compatible = "adi,adv7533";
+		reg = <0x39>;
+
+		interrupt-parent = <&pinctrl>;
+		interrupts = <RZG2L_GPIO(7, 1) IRQ_TYPE_LEVEL_LOW>;
+
+		adi,dsi-lanes = <4>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				adv7533_in: endpoint@0 {
+					remote-endpoint = <&dsi0_out>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				adv7533_out: endpoint@1 {
+				remote-endpoint = <&hdmi_con_out>;
+				};
+			};
+		};
 	};
 
 	sht4x@44 {
@@ -772,16 +810,16 @@
 };
 
 &dsi0 {
-	// status = "okay";
+	status = "okay";
 
-	// ports {
-	// 	port@1 {
-	// 		dsi0_out: endpoint {
-	// 			remote-endpoint = <&adv7535_in>;
-	// 			data-lanes = <1 2 3 4>;
-	// 		};
-	// 	};
-	// };
+	ports {
+		port@1 {
+			dsi0_out: endpoint {
+				remote-endpoint = <&adv7533_in>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+	};
 };
 
 &pcie0 {
