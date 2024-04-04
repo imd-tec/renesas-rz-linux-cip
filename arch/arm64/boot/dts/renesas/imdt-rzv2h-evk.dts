@@ -172,29 +172,29 @@
 		clock-frequency = <24000000>;
 	};
 
-	ov5645_vdddo_1v8: 1p8v {
-		compatible = "regulator-fixed";
-		regulator-name = "camera_vdddo";
-		regulator-min-microvolt = <1800000>;
-		regulator-max-microvolt = <1800000>;
-		regulator-always-on;
-	};
+	// ov5645_vdddo_1v8: 1p8v {
+	// 	compatible = "regulator-fixed";
+	// 	regulator-name = "camera_vdddo";
+	// 	regulator-min-microvolt = <1800000>;
+	// 	regulator-max-microvolt = <1800000>;
+	// 	regulator-always-on;
+	// };
 
-	ov5645_vdda_2v8: 2p8v {
-		compatible = "regulator-fixed";
-		regulator-name = "camera_vdda";
-		regulator-min-microvolt = <2800000>;
-		regulator-max-microvolt = <2800000>;
-		regulator-always-on;
-	};
+	// ov5645_vdda_2v8: 2p8v {
+	// 	compatible = "regulator-fixed";
+	// 	regulator-name = "camera_vdda";
+	// 	regulator-min-microvolt = <2800000>;
+	// 	regulator-max-microvolt = <2800000>;
+	// 	regulator-always-on;
+	// };
 
-	ov5645_vddd_1v5: 1p5v {
-		compatible = "regulator-fixed";
-		regulator-name = "camera_vddd";
-		regulator-min-microvolt = <1500000>;
-		regulator-max-microvolt = <1500000>;
-		regulator-always-on;
-	};
+	// ov5645_vddd_1v5: 1p5v {
+	// 	compatible = "regulator-fixed";
+	// 	regulator-name = "camera_vddd";
+	// 	regulator-min-microvolt = <1500000>;
+	// 	regulator-max-microvolt = <1500000>;
+	// 	regulator-always-on;
+	// };
 
 	/* input to the 5L35023B */
 	x1_clk: x1-clock {
@@ -354,7 +354,7 @@
 	};
 
 	usb30_pins: usb30 {
-		pinmux = <RZG2L_PORT_PINMUX(11, 0, 14)>; /* VBUS */
+		pinmux = <RZG2L_PORT_PINMUX(6, 0, 14)>; /* VBUS */
 	};
 
 	usb31_pins: usb31 {
@@ -644,15 +644,18 @@
 
 	status = "okay";
 
-	// TODO: one of these will be at address 0x20
-
-	cam_gpio: gpio@21 {
+	cam_gpio: gpio@20 {
 		compatible = "nxp,pcal6416";
-		reg = <0x21>;
+		reg = <0x20>;
 		gpio-controller;
 		#gpio-cells = <2>;
 
-		// TODO: set pin names
+		gpio-line-names =
+			"ISP_CCM1_PWR_DIS", "ISP_CCM2_PWR_DIS", "CCM1_PWR_DIS", "CCM2_PWR_DIS",
+			"ISP_STBY", "ISP_CAM_TRIG", "CCM_TRIG", "nAUDIO_RESET_1V8",
+			"ISP_CCM1_RST", "ISP_CCM2_RST", "CCM1_RST", "CCM2_RST",
+			"USB2_SEL", "M2_SDIO_RSTn", "TP232", "RS232_INVALIDn";
+
 		// TODO: define interrupt GPIO (P87?)
 		// TODO: define GPIO hogs
 	};
@@ -663,7 +666,12 @@
 		gpio-controller;
 		#gpio-cells = <2>;
 
-		// TODO: set pin names
+		gpio-line-names =
+			"M2B-CONFIG_0", "M2B-CONFIG_1", "M2B-CONFIG_2", "M2B-CONFIG_3",
+			"M2B_CARD_ONOFFn", "M2_PD_EN", "M2E_BT_WAKE_HOST", "M2B_W_DISABLE2n",
+			"M2B_WAKE-UP", "M2B_RSTn", "M2B_DPR", "M2B_FLIGHT_MODE",
+			"CAN_STDBY", "M2B_WAKE_HOST", "M2E_BT_ENn", "M2E_WLAN_ENn";
+
 		// TODO: define interrupt GPIO (P87?)
 		// TODO: define GPIO hogs
 	};
