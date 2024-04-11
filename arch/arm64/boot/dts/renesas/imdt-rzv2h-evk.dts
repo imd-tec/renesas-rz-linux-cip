@@ -318,12 +318,6 @@
 		line-name = "cam0_pwr_en";
 	};
 
-	sdhi1_pins: sd1 {
-		sd0_mux {
-			pinmux = <RZG2L_PORT_PINMUX(9, 4, 14)>; /* SD1_CD */
-		};
-	};
-
 	i2c0_pins: i2c0 {
 		pinmux = <RZG2L_PORT_PINMUX(3, 0, 1)>, /* I2C0_SDA */
 			 <RZG2L_PORT_PINMUX(3, 1, 1)>; /* I2C0_SCL */
@@ -452,13 +446,12 @@
 };
 
 &sdhi1 {
-	pinctrl-0 = <&sdhi1_pins>;
-	pinctrl-names = "default";
 	vmmc-supply = <&reg_3p3v>;
 	vqmmc-supply = <&vccq_sdhi1>;
 	bus-width = <4>;
 	sd-uhs-sdr50;
 	sd-uhs-sdr104;
+	cd-gpios = <&pinctrl RZG2L_GPIO(9, 4) GPIO_ACTIVE_HIGH>;	
 	status = "okay";
 };
 
