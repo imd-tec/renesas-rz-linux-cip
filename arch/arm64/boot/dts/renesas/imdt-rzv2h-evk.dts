@@ -310,12 +310,14 @@
 		line-name = "sd1_pwr_en";
 	};
 
-	/* cam0_pwr_en is used by Google Coral Camera from CSI20 and CSI21 */
-	cam0_pwr_en {
+	/* cam_pwr_en turns on 1.2V reg, 1.8V_CAM supply and 3.3V_CAM supply. */
+	/* Schematic on SOM shows this being PB2/CAM0&1_PWR but it's actually using */ 
+	/* P74. And you can trace this from the SOM to the SBC schematic */
+	cam_pwr_en {
 		gpio-hog;
-		gpios = <RZG2L_GPIO(11, 2) GPIO_ACTIVE_HIGH>;
+		gpios = <RZG2L_GPIO(7, 4) GPIO_ACTIVE_HIGH>;
 		output-high;
-		line-name = "cam0_pwr_en";
+		line-name = "cam_pwr_en";
 	};
 
 	i2c0_pins: i2c0 {
@@ -329,8 +331,8 @@
 	};
 
 	i2c2_pins: i2c2 {
-		pinmux = <RZG2L_PORT_PINMUX(2, 0, 4)>, /* I2C2_SDA */
-			 <RZG2L_PORT_PINMUX(2, 1, 4)>; /* I2C2_SCL */
+		pinmux = <RZG2L_PORT_PINMUX(3, 4, 1)>, /* I2C2_SDA */
+			 <RZG2L_PORT_PINMUX(3, 5, 1)>; /* I2C2_SCL */
 	};
 
 	i2c3_pins: i2c3 {
@@ -382,6 +384,19 @@
 			 <RZG2L_PORT_PINMUX(10, 7, 5)>, /* SSL */
 			 <RZG2L_PORT_PINMUX(11, 5, 5)>; /* RSPCK */
 	};
+
+	// TODO: Chat with Arnon
+	// We should switch to use RSPI or I2C as 
+	// there is currently no Simple SPI (RSCI) driver in
+	// the kernel. Also, make sure to use their dedicated
+	// Slave Select pin when using SPI as it will be toggled
+	// by the HW regardless.
+	// spi4_pins: spi4 {
+	// 	pinmux = <RZG2L_PORT_PINMUX(8,  5, 6)>, /* MISO */
+	// 		 <RZG2L_PORT_PINMUX(8,  4, 6)>, /* MOSI */
+	// 		 <RZG2L_PORT_PINMUX(6,  4, 0)>, /* SSL */
+	// 		 <RZG2L_PORT_PINMUX(8,  0, 1)>; /* RSPCK */
+	// };
 
 	sound_clk_pins: sound_clk {
 		pinmux = <RZG2L_PORT_PINMUX(1, 0, 7)>, /* AUDIO_CLKB */
@@ -543,63 +558,77 @@
 &i2c0 {
 	pinctrl-0 = <&i2c0_pins>;
 	pinctrl-names = "default";
+	clock-frequency = <400000>;
 
 	status = "okay";
 
-	// TODO: add AP1302 to CSI0
+	ap1302_csi20: ap1302_csi20@3c {
+		compatible = "onnn,ap1302";
+		reg = <0x3c>;
 
-	// ov5645_csi20: ov5645_csi20@3c {
-	// 	compatible = "ovti,ov5645";
-	// 	reg = <0x3c>;
-	// 	clock-names = "xclk";
-	// 	clocks = <&clk_ext_camera>;
-	// 	clock-frequency = <24000000>;
-	// 	vdddo-supply = <&ov5645_vdddo_1v8>;
-	// 	vdda-supply = <&ov5645_vdda_2v8>;
-	// 	vddd-supply = <&ov5645_vddd_1v5>;
-	// 	/* Set dummy enable gpio */
-	// 	enable-gpios = <&pinctrl RZG2L_GPIO(1, 6) GPIO_ACTIVE_HIGH>;
-	// 	reset-gpios = <&pinctrl RZG2L_GPIO(6, 4) GPIO_ACTIVE_LOW>;
+		clock-names = "csi_mclk";
+		clocks = <&clk_ext_camera>;
 
-	// 	port {
-	// 		ov5645_to_csi20: endpoint {
-	// 			clock-lanes = <0>;
-	// 			data-lanes = <1 2>;
-	// 			remote-endpoint = <&csi20_in>;
-	// 		};
-	// 	};
-	// };
+		reset-gpios = <&cam_gpio 8 GPIO_ACTIVE_LOW>;
+		power-gpios = <&cam_gpio 0 GPIO_ACTIVE_LOW>;
+
+		port {
+			ap1302_to_csi20: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2 3 4>;
+				remote-endpoint = <&csi20_in>;
+			};
+		};
+
+		sensors {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			onnn,model = "onnn,ar1335";
+
+			sensor@0 {
+				reg = <0>;
+			};
+		};		
+	};
 };
 
 &i2c1 {
 	pinctrl-0 = <&i2c1_pins>;
 	pinctrl-names = "default";
+	clock-frequency = <400000>;
 
 	status = "okay";
 
-	// TODO: add AP1302 to CSI1
+	ap1302_csi21: ap1302_csi21@3d {
+		compatible = "onnn,ap1302";
+		reg = <0x3d>;
 
-	// ov5645_csi21: ov5645_csi21@3c {
-	// 	compatible = "ovti,ov5645";
-	// 	reg = <0x3c>;
-	// 	clock-names = "xclk";
-	// 	clocks = <&clk_ext_camera>;
-	// 	clock-frequency = <24000000>;
-	// 	vdddo-supply = <&ov5645_vdddo_1v8>;
-	// 	vdda-supply = <&ov5645_vdda_2v8>;
-	// 	vddd-supply = <&ov5645_vddd_1v5>;
-	// 	/* Set dummy enable gpio */
-	// 	enable-gpios = <&pinctrl RZG2L_GPIO(1, 7) GPIO_ACTIVE_HIGH>;
-	// 	reset-gpios = <&pinctrl RZG2L_GPIO(6, 5) GPIO_ACTIVE_LOW>;
+		clock-names = "csi_mclk";
+		clocks = <&clk_ext_camera>;
 
-	// 	port {
-	// 		ov5645_to_csi21: endpoint {
-	// 			clock-lanes = <0>;
-	// 			data-lanes = <1 2>;
-	// 			remote-endpoint = <&csi21_in>;
-	// 		};
-	// 	};
-	// };
+		reset-gpios = <&cam_gpio 9 GPIO_ACTIVE_LOW>;
+		power-gpios = <&cam_gpio 1 GPIO_ACTIVE_LOW>;
+
+		port {
+			ap1302_to_csi21: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2 3 4>;
+				remote-endpoint = <&csi21_in>;
+			};
+		};
+
+		sensors {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			onnn,model = "onnn,ar1335";
+
+			sensor@0 {
+				reg = <0>;
+			};
+		};		
+	};
 };
 
 &i2c2 {
@@ -611,6 +640,11 @@
 	mmc5633@30 {
 		compatible = "memsic,mmc5633";
 		reg = <0x30>;
+	};
+
+	sht4x@44 {
+		compatible = "sensirion,sht4x";
+		reg = <0x44>;
 	};
 
 	adv7533: hdmi@39 {
@@ -636,15 +670,10 @@
 			port@1 {
 				reg = <1>;
 				adv7533_out: endpoint@1 {
-				remote-endpoint = <&hdmi_con_out>;
+					remote-endpoint = <&hdmi_con_out>;
 				};
 			};
 		};
-	};
-
-	sht4x@44 {
-		compatible = "sensirion,sht4x";
-		reg = <0x44>;
 	};
 
 	// da7212: codec@1a {
@@ -683,13 +712,33 @@
 		#gpio-cells = <2>;
 
 		gpio-line-names =
-			"ISP_CCM1_PWR_DIS", "ISP_CCM2_PWR_DIS", "CCM1_PWR_DIS", "CCM2_PWR_DIS",
-			"ISP_STBY", "ISP_CAM_TRIG", "CCM_TRIG", "nAUDIO_RESET_1V8",
-			"ISP_CCM1_RST", "ISP_CCM2_RST", "CCM1_RST", "CCM2_RST",
-			"USB2_SEL", "M2_SDIO_RSTn", "TP232", "RS232_INVALIDn";
+			"ISP_CCM1_PWR_DIS", 
+			"ISP_CCM2_PWR_DIS", 
+			"CCM1_PWR_DIS", 
+			"CCM2_PWR_DIS",
+			"ISP_STBY", 
+			"ISP_CAM_TRIG", 
+			"CCM_TRIG", 
+			"nAUDIO_RESET_1V8",
+			"ISP_CCM1_RST", 
+			"ISP_CCM2_RST", 
+			"CCM1_RST", 
+			"CCM2_RST",
+			"USB2_SEL", 
+			"M2_SDIO_RSTn", 
+			"TP232", 
+			"RS232_INVALIDn";
 
-		// TODO: define interrupt GPIO (P87?)
-		// TODO: define GPIO hogs
+		// TODO: define GPIO hogs and Interrupt GPIO
+		// interrupt-parent = <&pinctrl>;
+		// interrupts = <RZG2L_GPIO(8, 7) IRQ_TYPE_LEVEL_LOW>;
+		isp-stby-hog {
+			gpio-hog;
+			gpios = <4 GPIO_ACTIVE_HIGH>;
+			output-low;
+		};
+
+		// TODO - Expose ISP_CAM_TRIG?
 	};
 
 	m2_gpio: gpio@21 {
@@ -699,13 +748,26 @@
 		#gpio-cells = <2>;
 
 		gpio-line-names =
-			"M2B-CONFIG_0", "M2B-CONFIG_1", "M2B-CONFIG_2", "M2B-CONFIG_3",
-			"M2B_CARD_ONOFFn", "M2_PD_EN", "M2E_BT_WAKE_HOST", "M2B_W_DISABLE2n",
-			"M2B_WAKE-UP", "M2B_RSTn", "M2B_DPR", "M2B_FLIGHT_MODE",
-			"CAN_STDBY", "M2B_WAKE_HOST", "M2E_BT_ENn", "M2E_WLAN_ENn";
+			"M2B-CONFIG_0", 
+			"M2B-CONFIG_1", 
+			"M2B-CONFIG_2", 
+			"M2B-CONFIG_3",
+			"M2B_CARD_ONOFFn", 
+			"M2_PD_EN", 
+			"M2E_BT_WAKE_HOST", 
+			"M2B_W_DISABLE2n",
+			"M2B_WAKE-UP", 
+			"M2B_RSTn", 
+			"M2B_DPR", 
+			"M2B_FLIGHT_MODE",
+			"CAN_STDBY", 
+			"M2B_WAKE_HOST", 
+			"M2E_BT_ENn", 
+			"M2E_WLAN_ENn";
 
-		// TODO: define interrupt GPIO (P87?)
-		// TODO: define GPIO hogs
+		// TODO: define GPIO hogs and Interrupt GPIO
+		// interrupt-parent = <&pinctrl>;
+		// interrupts = <RZG2L_GPIO(9, 7) IRQ_TYPE_LEVEL_LOW>;
 	};
 
 	// TODO: 9FGV0241 (https://lore.kernel.org/all/20220219015003.507601-2-marex@denx.de/T/)
@@ -828,17 +890,16 @@
 };
 
 &csi20 {
-	// status = "okay";
-
-	// ports {
-	// 	port {
-	// 		csi20_in: endpoint {
-	// 			clock-lanes = <0>;
-	// 			data-lanes = <1 2>;
-	// 			remote-endpoint = <&ov5645_to_csi20>;
-	// 		};
-	// 	};
-	// };
+	status = "okay";
+	ports {
+		port {
+			csi20_in: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2 3 4>;
+				remote-endpoint = <&ap1302_to_csi20>;
+			};
+		};
+	};
 };
 
 &cru1 {
@@ -846,17 +907,17 @@
 };
 
 &csi21 {
-	// status = "okay";
+	status = "okay";
 
-	// ports {
-	// 	port {
-	// 		csi21_in: endpoint {
-	// 			clock-lanes = <0>;
-	// 			data-lanes = <1 2>;
-	// 			remote-endpoint = <&ov5645_to_csi21>;
-	// 		};
-	// 	};
-	// };
+	ports {
+		port {
+			csi21_in: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2 3 4>;
+				remote-endpoint = <&ap1302_to_csi21>;
+			};
+		};
+	};
 };
 
 &cru2 {

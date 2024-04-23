@@ -346,6 +346,9 @@ static int rzg2l_cru_mc_validate_format(struct rzg2l_cru_dev *cru,
 		}
 	} else {
 		switch (fmt.format.code) {
+		case MEDIA_BUS_FMT_UYVY8_1X16:
+		case MEDIA_BUS_FMT_YUYV8_1X16:
+		case MEDIA_BUS_FMT_YUYV8_2X8:
 		case MEDIA_BUS_FMT_UYVY8_2X8:
 		case MEDIA_BUS_FMT_UYVY10_2X10:
 		case MEDIA_BUS_FMT_RGB444_1X12:
@@ -502,6 +505,9 @@ static void rzg2l_cru_csi2_setup(struct rzg2l_cru_dev *cru)
 	 * Input interface
 	 */
 	switch (cru->mbus_code) {
+	case MEDIA_BUS_FMT_UYVY8_1X16:
+	case MEDIA_BUS_FMT_YUYV8_1X16:
+	case MEDIA_BUS_FMT_YUYV8_2X8:
 	case MEDIA_BUS_FMT_UYVY8_2X8:
 		icnmc = ICnMC_INF_YUV8_422;
 		cru->input_fmt = YUV;

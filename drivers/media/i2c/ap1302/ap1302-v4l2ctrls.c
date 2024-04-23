@@ -11,6 +11,8 @@
 
 #include "ap1302.h"
 
+#define AP1302_BITS_PER_PIXEL 16
+
 static u16 ap1302_wb_values[] = {
 	AP1302_AWB_CTRL_MODE_OFF,	/* V4L2_WHITE_BALANCE_MANUAL */
 	AP1302_AWB_CTRL_MODE_AUTO,	/* V4L2_WHITE_BALANCE_AUTO */
@@ -407,9 +409,28 @@ static const char *const test_pattern_menu[] = {
 	"black and white"
 };
 
+static u32 ap1302_calculate_pixel_rate(struct ap1302_device *ap1302) 
+{
+	u64 num_data_lanes = ap1302->bus_cfg.bus.mipi_csi2.num_data_lanes;
+	u64 mipi_data_rate_hz;
+	u64 pixel_rate;
+
+	/*
+	 * We do a back calculation to take the AP1302 MIPI data rate 
+	 * and convert it to a Pixel rate that can be used by other drivers.
+	 * The MIPI Data rate is in Hz (ie Bits per second)
+	 */
+	mipi_data_rate_hz = (ap1302->hinf_mipi_freq_tgt * 1000000UL);
+	do_div(mipi_data_rate_hz, 0x10000UL);
+
+	pixel_rate = mipi_data_rate_hz * num_data_lanes / AP1302_BITS_PER_PIXEL;  
+	return (u32)pixel_rate;
+}
+
 int ap1302_ctrls_init(struct ap1302_device *ap1302)
 {
 	unsigned int i;
+	u32 pixel_rate;
 	int ret;
 
 	ret = v4l2_ctrl_handler_init(&ap1302->ctrls, ARRAY_SIZE(ap1302_ctrls));
@@ -424,6 +445,10 @@ int ap1302_ctrls_init(struct ap1302_device *ap1302)
 				     V4L2_CID_TEST_PATTERN,
 				     ARRAY_SIZE(test_pattern_menu) - 1,
 				     0, 0, test_pattern_menu);
+
+	pixel_rate = ap1302_calculate_pixel_rate(ap1302);
+	v4l2_ctrl_new_std(&ap1302->ctrls, &ap1302_ctrl_ops, V4L2_CID_PIXEL_RATE,
+			  0, pixel_rate, 1, pixel_rate);
 
 	if (ap1302->ctrls.error) {
 		ret = ap1302->ctrls.error;

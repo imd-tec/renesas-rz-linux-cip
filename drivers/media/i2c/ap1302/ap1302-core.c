@@ -276,18 +276,18 @@ static int ap1302_power_on(struct ap1302_device *ap1302)
 
 	/* 1. Assert STANDBY. */
 	if (ap1302->standby_gpio) {
-		gpiod_set_value(ap1302->standby_gpio, 1);
+		gpiod_set_value_cansleep(ap1302->standby_gpio, 1);
 		usleep_range(500, 1000);
 	}
 
 	/* 2. Power up the regulators. To be implemented. */
 	if (ap1302->power_gpio) {
-		gpiod_set_value(ap1302->power_gpio, 1);
+		gpiod_set_value_cansleep(ap1302->power_gpio, 1);
 	}
 
 	/* 3. De-assert STANDBY. */
 	if (ap1302->standby_gpio) {
-		gpiod_set_value(ap1302->standby_gpio, 0);
+		gpiod_set_value_cansleep(ap1302->standby_gpio, 0);
 		usleep_range(500, 1000);
 	}
 
@@ -301,7 +301,7 @@ static int ap1302_power_on(struct ap1302_device *ap1302)
 
 	/* 5. De-assert RESET. */
 	if (ap1302->reset_gpio) {
-		gpiod_set_value(ap1302->reset_gpio, 0);
+		gpiod_set_value_cansleep(ap1302->reset_gpio, 0);
 	}
 
 	/*
@@ -320,7 +320,7 @@ static void ap1302_power_off(struct ap1302_device *ap1302)
 	} else {
 		/* 1. Assert RESET. */
 		if (ap1302->reset_gpio) {
-			gpiod_set_value(ap1302->reset_gpio, 1);
+			gpiod_set_value_cansleep(ap1302->reset_gpio, 1);
 		}
 
 		/* 2. Turn the clock off. */
@@ -328,19 +328,19 @@ static void ap1302_power_off(struct ap1302_device *ap1302)
 
 		/* 3. Assert STANDBY. */
 		if (ap1302->standby_gpio) {
-			gpiod_set_value(ap1302->standby_gpio, 1);
+			gpiod_set_value_cansleep(ap1302->standby_gpio, 1);
 			usleep_range(500, 1000);
 		}
 
 		/* 4. Power down the regulators. To be implemented. */
 		if (ap1302->power_gpio) {
-			gpiod_set_value(ap1302->power_gpio, 0);
+			gpiod_set_value_cansleep(ap1302->power_gpio, 0);
 		}
 
 		/* 5. De-assert STANDBY. */
 		if (ap1302->standby_gpio) {
 			usleep_range(500, 1000);
-			gpiod_set_value(ap1302->standby_gpio, 0);
+			gpiod_set_value_cansleep(ap1302->standby_gpio, 0);
 		}
 	}
 }
@@ -1402,10 +1402,6 @@ static int ap1302_hw_init(struct ap1302_device *ap1302)
 				goto error_firmware;
 		}
 
-		ret = ap1302_spi_init(ap1302);
-		if (ret)
-			goto error_power;
-
 		ret = ap1302_detect_chip(ap1302);
 		if (ret)
 			goto error_power;
@@ -1516,13 +1512,6 @@ static int ap1302_parse_of(struct ap1302_device *ap1302)
 	const char *model;
 	unsigned int i;
 	int ret;
-	struct pinctrl *pinctrl;
-
-	/* TODO - this is necessary to change the MCLK pinmux settings... is there a better way? */
-	pinctrl = devm_pinctrl_get_select_default(ap1302->dev);
-	if (IS_ERR(pinctrl))
-		dev_warn(ap1302->dev, "No pin available (%ld)\n", PTR_ERR(pinctrl));
-
 
 	/* Clock */
 	ap1302->clock = devm_clk_get(ap1302->dev, "csi_mclk");
@@ -1685,15 +1674,9 @@ static int ap1302_probe(struct i2c_client *client, const struct i2c_device_id *i
 		goto error;
 	}
 
-	ret = ap1302_register_spi_driver(ap1302);
-	if (ret) {
-		dev_err(ap1302->dev, "failed to register SPI driver");
-		goto error;
-	}
-
 	ret = ap1302_parse_of(ap1302);
 	if (ret < 0)
-		goto error_spi_cleanup;
+		goto error;
 
 	for (i = 0; i < ARRAY_SIZE(ap1302->sensors); ++i) {
 		struct ap1302_sensor *sensor = &ap1302->sensors[i];
@@ -1703,12 +1686,12 @@ static int ap1302_probe(struct i2c_client *client, const struct i2c_device_id *i
 
 		ret = ap1302_sensor_init(sensor, i);
 		if (ret < 0)
-			goto error_spi_cleanup;
+			goto error;
 	}
 
 	ret = ap1302_hw_init(ap1302);
 	if (ret)
-		goto error_spi_cleanup;
+		goto error;
 
 	ap1302_debugfs_init(ap1302);
 
@@ -1735,8 +1718,6 @@ static int ap1302_probe(struct i2c_client *client, const struct i2c_device_id *i
 
 error_hw_cleanup:
 	ap1302_hw_cleanup(ap1302);
-error_spi_cleanup:
-	ap1302_unregister_spi_driver(ap1302);
 error:
 	ap1302_cleanup(ap1302);
 	return ret;
@@ -1756,8 +1737,6 @@ static int ap1302_remove(struct i2c_client *client)
 
 	v4l2_async_unregister_subdev(&ap1302->sd);
 	media_entity_cleanup(&ap1302->sd.entity);
-
-	ap1302_unregister_spi_driver(ap1302);
 
 	ap1302_ctrls_cleanup(ap1302);
 
