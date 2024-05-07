@@ -17,8 +17,9 @@
 
 	aliases {
 		serial0 = &scif0;
-		serial1 = &sci4;
-		serial2 = &sci5;
+		serial1 = &sci0;
+		serial2 = &sci4;
+		serial3 = &sci5;
 		mmc0 = &sdhi0;
 		mmc1 = &sdhi1;
 		mmc2 = &sdhi2;
@@ -282,6 +283,11 @@
 		pins =  "SCIF_RXD", "SCIF_TXD";
 	};
 
+	sci0_pins: sci0 {
+		pinmux = <RZG2L_PORT_PINMUX(5, 0, 1)>, /* SCI0_TXD_MOSI_SDA */
+			 <RZG2L_PORT_PINMUX(5, 1, 1)>; /* SCI0_RXD_MISO_SCL */
+	};
+
 	// TODO: these are used to communicate with the ISPs
 
 	// sci4_pins: sci4 {
@@ -308,6 +314,13 @@
 		gpios = <RZG2L_GPIO(10, 3) GPIO_ACTIVE_HIGH>;
 		output-high;
 		line-name = "sd1_pwr_en";
+	};
+
+	rs232_pwr_en {
+		gpio-hog;
+		gpios = <RZG2L_GPIO(4, 7) GPIO_ACTIVE_LOW>;
+		output-high;
+		line-name = "rs232_pwr_en";
 	};
 
 	/* cam_pwr_en turns on 1.2V reg, 1.8V_CAM supply and 3.3V_CAM supply. */
@@ -348,11 +361,6 @@
 	i2c6_pins: i2c6 {
 		pinmux = <RZG2L_PORT_PINMUX(4, 4, 1)>, /* I2C6_SDA */
 			 <RZG2L_PORT_PINMUX(4, 5, 1)>; /* I2C6_SCL */
-	};
-
-	i2c7_pins: i2c7 {
-		pinmux = <RZG2L_PORT_PINMUX(4, 6, 1)>, /* I2C7_SDA */
-			 <RZG2L_PORT_PINMUX(4, 7, 1)>; /* I2C7_SCL */
 	};
 
 	i2c8_pins: i2c8 {
@@ -430,6 +438,12 @@
 	pinctrl-0 = <&scif0_pins>;
 	pinctrl-names = "default";
 
+	status = "okay";
+};
+
+&sci0 {
+	pinctrl-0 = <&sci0_pins>;
+	pinctrl-names = "default";
 	status = "okay";
 };
 
@@ -854,13 +868,6 @@
 	// };
 };
 
-&i2c7 {
-	pinctrl-0 = <&i2c7_pins>;
-	pinctrl-names = "default";
-
-	status = "okay";
-};
-
 &du {
 	status = "okay";
 };
@@ -1033,7 +1040,7 @@
 	pinctrl-0 = <&can1_pins>;
 	pinctrl-names = "default";
 	status = "okay";
-
+	//renesas,no-can-fd; - enables classic CAN
 	channel1 {
 		status = "okay";
 	};
