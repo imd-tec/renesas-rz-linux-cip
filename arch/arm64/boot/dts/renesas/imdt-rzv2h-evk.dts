@@ -778,7 +778,13 @@
 			"M2B_WAKE_HOST", 
 			"M2E_BT_ENn", 
 			"M2E_WLAN_ENn";
-
+			
+		m2b-pd-en-hog {
+			gpio-hog;
+			gpios = <5 GPIO_ACTIVE_HIGH>;
+			output-high;
+		};
+		
 		// TODO: define GPIO hogs and Interrupt GPIO
 		// interrupt-parent = <&pinctrl>;
 		// interrupts = <RZG2L_GPIO(9, 7) IRQ_TYPE_LEVEL_LOW>;
