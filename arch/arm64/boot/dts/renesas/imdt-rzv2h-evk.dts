@@ -139,6 +139,15 @@
 		regulator-always-on;
 	};
 
+	reg_1p8v_sdio: regulator4 {
+		compatible = "regulator-fixed";
+		regulator-name = "sdio-fixed-1.8V";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+
 	vccq_sdhi0: regulator-vccq-sdhi0 {
 		compatible = "regulator-gpio";
 
@@ -165,6 +174,19 @@
 
 		gpios-states = <0>;
 		states = <3300000 0 1800000 1>;
+	};
+
+	wlan_en_pmic: wlan-en-1-8v {
+		compatible = "regulator-fixed";
+
+		regulator-name = "wlan-pmic-en-regulator";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+
+		gpio = <&pinctrl RZG2L_GPIO(7, 5) GPIO_ACTIVE_HIGH>;
+
+		startup-delay-us = <100000>;
+		enable-active-high;
 	};
 
 	hdmi-out {
@@ -308,7 +330,7 @@
 		output-high;
 		line-name = "sd0_pwr_en";
 	};
-
+	
 	sd1_pwr_en {
 		gpio-hog;
 		gpios = <RZG2L_GPIO(10, 3) GPIO_ACTIVE_HIGH>;
@@ -393,12 +415,12 @@
 			 <RZG2L_PORT_PINMUX(6, 7, 14)>; /* OVC */
 	};
 
-	spi2_pins: spi2 {
-		pinmux = <RZG2L_PORT_PINMUX(11, 3, 5)>, /* MISO */
-			 <RZG2L_PORT_PINMUX(11, 4, 5)>, /* MOSI */
-			 <RZG2L_PORT_PINMUX(10, 7, 5)>, /* SSL */
-			 <RZG2L_PORT_PINMUX(11, 5, 5)>; /* RSPCK */
-	};
+	// spi2_pins: spi2 {
+	// 	pinmux = <RZG2L_PORT_PINMUX(11, 3, 5)>, /* MISO */
+	// 		 <RZG2L_PORT_PINMUX(11, 4, 5)>, /* MOSI */
+	// 		 <RZG2L_PORT_PINMUX(10, 7, 5)>, /* SSL */
+	// 		 <RZG2L_PORT_PINMUX(11, 5, 5)>; /* RSPCK */
+	// };
 
 	// TODO: Chat with Arnon
 	// We should switch to use RSPI or I2C as 
@@ -426,6 +448,27 @@
 			 <RZG2L_PORT_PINMUX(1, 3, 7)>, /* SSI3_WS */
 			 <RZG2L_PORT_PINMUX(0, 4, 7)>, /* SSI3_SDATA */
 			 <RZG2L_PORT_PINMUX(1, 5, 7)>; /* SSI4_SDATA */
+	};
+
+	wifi_sdio_pins: wifi {
+		wifi_sdio_data_pins {
+			pinmux = <RZG2L_PORT_PINMUX(11, 1, 1)>, //SD2DAT0
+				 <RZG2L_PORT_PINMUX(11, 2, 1)>, //SD2DAT1
+				 <RZG2L_PORT_PINMUX(11, 3, 1)>, //SD2DAT2
+				 <RZG2L_PORT_PINMUX(11, 4, 1)>, //SD2DAT3
+				 <RZG2L_PORT_PINMUX(11, 5, 1)>; //SD2CMD
+		};
+
+		wifi_sdio_clk_pin {
+			pinmux = <RZG2L_PORT_PINMUX(11, 0, 1)>; //SD2CLK
+		};
+	};
+
+	bluetooth_pins: bluetooth {
+		pinmux = <RZG2L_PORT_PINMUX(5, 4, 1)>, //SCI2_TXD_MOSI_SDA
+			 <RZG2L_PORT_PINMUX(5, 5, 1)>, //SCI2_RXD_MISO_SCL
+			 <RZG2L_PORT_PINMUX(5, 6, 4)>, //SCI2_CTS
+			 <RZG2L_PORT_PINMUX(5, 7, 2)>; //SCI2_CTS_RTS	
 	};
 };
 
@@ -488,6 +531,30 @@
 	sd-uhs-sdr50;
 	sd-uhs-sdr104;
 	cd-gpios = <&pinctrl RZG2L_GPIO(9, 4) GPIO_ACTIVE_HIGH>;	
+	status = "okay";
+};
+
+&sdhi2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&wifi_sdio_pins>;
+	
+	// TODO - I think all we need here is the vmmc-supply set to a 3.3Vreg (the Wifi_3v3 reg) 
+	// and the mmc-powerseq property to set PMIC_EN
+	// As we have learnt, the vmmc-supply property is used to 
+	// set the host OCR mask (ie what voltages the host supports).
+	// And it needs to be 3v3!
+	vmmc-supply = <&wlan_en_pmic>;
+	vqmmc-supply = <&reg_1p8v_sdio>;
+	bus-width = <4>;
+	keep-power-in-suspend;
+	non-removable;
+
+	no-sd;
+	no-mmc;
+
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr50;
 	status = "okay";
 };
 
@@ -1060,13 +1127,6 @@
 };
 
 &wdt1 {
-	status = "okay";
-};
-
-&spi2 {
-	pinctrl-0 = <&spi2_pins>;
-	pinctrl-names = "default";
-
 	status = "okay";
 };
 
