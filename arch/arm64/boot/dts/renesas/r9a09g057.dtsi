@@ -387,7 +387,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI0_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI0_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI0_PRESETN>,
+				 <&cpg R9A09G057_RSCI0_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -403,7 +405,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI1_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI1_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI1_PRESETN>,
+				 <&cpg R9A09G057_RSCI1_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -419,7 +423,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI2_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI2_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI2_PRESETN>,
+				 <&cpg R9A09G057_RSCI2_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -435,7 +441,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI3_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI3_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI3_PRESETN>,
+				 <&cpg R9A09G057_RSCI3_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -451,7 +459,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI4_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI4_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI4_PRESETN>,
+				 <&cpg R9A09G057_RSCI4_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -467,7 +477,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI5_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI5_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI5_PRESETN>,
+				 <&cpg R9A09G057_RSCI5_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -483,7 +495,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI6_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI6_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI6_PRESETN>,
+				 <&cpg R9A09G057_RSCI6_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -499,7 +513,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI7_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI7_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI7_PRESETN>,
+				 <&cpg R9A09G057_RSCI7_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -515,7 +531,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI8_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI8_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI8_PRESETN>,
+				 <&cpg R9A09G057_RSCI8_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -531,7 +549,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI9_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI9_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI9_PRESETN>,
+				 <&cpg R9A09G057_RSCI9_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
