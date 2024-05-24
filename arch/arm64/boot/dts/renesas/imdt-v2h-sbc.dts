@@ -12,8 +12,8 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
-	model = "IMDT RZ/V2H EVK";
-	compatible = "imdt,rzv2h-evk", "renesas,r9a09g057h4", "renesas,r9a09g057";
+	model = "IMDT V2H SBC";
+	compatible = "imdt,v2h-sbc", "renesas,r9a09g057h4", "renesas,r9a09g057";
 
 	aliases {
 		serial0 = &scif0;
