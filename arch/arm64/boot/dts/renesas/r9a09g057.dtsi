@@ -73,21 +73,22 @@
 		clock-frequency = <0>;
 	};
 
-	/* audio_clkb clock input */
-	audio_clkb: audio_clkb {
-		compatible = "fixed-clock";
-		#clock-cells = <0>;
-		/* This value must be overridden by the board */
-		clock-frequency = <0>;
-	};
+	/* imdt-v2h-sbc - Clocks B & C require removal for audio rcar_sound*/
+	// /* audio_clkb clock input */
+	// audio_clkb: audio_clkb {
+	// 	compatible = "fixed-clock";
+	// 	#clock-cells = <0>;
+	// 	/* This value must be overridden by the board */
+	// 	clock-frequency = <0>;
+	// };
 
-	/* audio_clkc clock input */
-	audio_clkc: audio_clkc {
-		compatible = "fixed-clock";
-		#clock-cells = <0>;
-		/* This value must be overridden by the board */
-		clock-frequency = <0>;
-	};
+	// /* audio_clkc clock input */
+	// audio_clkc: audio_clkc {
+	// 	compatible = "fixed-clock";
+	// 	#clock-cells = <0>;
+	// 	/* This value must be overridden by the board */
+	// 	clock-frequency = <0>;
+	// };
 
 	/* ptp_clock input */
 	ptp_clock: ptp_clock {
@@ -205,11 +206,17 @@
 			clocks = <&extal_clk>,
 				 <&et0_txc_tx_clk>, <&et0_rxc_rx_clk>,
 				 <&et1_txc_tx_clk>, <&et1_rxc_rx_clk>,
-				 <&audio_clka>, <&audio_clkb>, <&audio_clkc>;
+				 <&audio_clka>;
+				 /* imdt-v2h-sbc - Clocks B & C require removal for audio rcar_sound*/
+				 // <&audio_clkb>, 
+				 // <&audio_clkc>;
 			clock-names = "extal",
 				      "et0_txc_tx_clk", "et0_rxc_rx_clk",
 				      "et1_txc_tx_clk", "et1_rxc_rx_clk",
-				      "audio_clka", "audio_clkb", "audio_clkc";
+				      "audio_clka";
+					  /* imdt-v2h-sbc - Clocks B & C require removal for audio rcar_sound*/
+					  // "audio_clkb",
+					  // "audio_clkc";
 			#clock-cells = <2>;
 			#reset-cells = <1>;
 			#power-domain-cells = <0>;
@@ -1876,8 +1883,9 @@
 				 <&cpg CPG_MOD R9A09G057_DMACPP_CLK>,
 				 <&cpg CPG_MOD R9A09G057_ADG_CLKS1>,
 				 <&cpg CPG_MOD R9A09G057_ADG_AUDIO_CLKA>,
-				 <&cpg CPG_MOD R9A09G057_ADG_AUDIO_CLKB>,
-				 <&cpg CPG_MOD R9A09G057_ADG_AUDIO_CLKC>,
+				 /* imdt-v2h-sbc - Clocks B & C require removal for audio rcar_sound*/
+				//  <&cpg CPG_MOD R9A09G057_ADG_AUDIO_CLKB>,
+				//  <&cpg CPG_MOD R9A09G057_ADG_AUDIO_CLKC>,
 				 <&cpg CPG_MOD R9A09G057_ADG_CLK_195M>,
 				 <&cpg CPG_MOD R9A09G057_ADG_SSI9_CLK>,
 				 <&cpg CPG_MOD R9A09G057_ADG_SSI8_CLK>,
@@ -1910,7 +1918,11 @@
 				 "dvc.0", "dvc.1",
 				 "audmac-pp",
 				 "adg_clk",
-				 "clk_a", "clk_b", "clk_c", "clk_i",
+				 "clk_a",
+				 /* imdt-v2h-sbc - Clocks B & C require removal for audio rcar_sound*/
+				 // "clk_b",
+				 // "clk_c", 
+				 "clk_i",
 				 "adg.ssi.9", "adg.ssi.8", "adg.ssi.7", "adg.ssi.6",
 				 "adg.ssi.5", "adg.ssi.4", "adg.ssi.3", "adg.ssi.2",
 				 "adg.ssi.1", "adg.ssi.0",
