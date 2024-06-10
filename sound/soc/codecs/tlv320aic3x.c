@@ -103,22 +103,22 @@ static const struct reg_default aic3x_reg[] = {
 	{  20, 0x78 }, {  21, 0x78 }, {  22, 0x78 }, {  23, 0x78 },
 	{  24, 0x78 }, {  25, 0x00 }, {  26, 0x00 }, {  27, 0xfe },
 	{  28, 0x00 }, {  29, 0x00 }, {  30, 0xfe }, {  31, 0x00 },
-	{  32, 0x18 }, {  33, 0x18 }, {  34, 0x00 }, {  35, 0x00 },
+	{  32, 0x00 }, {  33, 0x00 }, {  34, 0x00 }, {  35, 0x00 },
 	{  36, 0x00 }, {  37, 0x00 }, {  38, 0x00 }, {  39, 0x00 },
 	{  40, 0x00 }, {  41, 0x00 }, {  42, 0x00 }, {  43, 0x80 },
 	{  44, 0x80 }, {  45, 0x00 }, {  46, 0x00 }, {  47, 0x00 },
-	{  48, 0x00 }, {  49, 0x00 }, {  50, 0x00 }, {  51, 0x04 },
+	{  48, 0x00 }, {  49, 0x00 }, {  50, 0x00 }, {  51, 0x06 },
 	{  52, 0x00 }, {  53, 0x00 }, {  54, 0x00 }, {  55, 0x00 },
-	{  56, 0x00 }, {  57, 0x00 }, {  58, 0x04 }, {  59, 0x00 },
+	{  56, 0x00 }, {  57, 0x00 }, {  58, 0x06 }, {  59, 0x00 },
 	{  60, 0x00 }, {  61, 0x00 }, {  62, 0x00 }, {  63, 0x00 },
-	{  64, 0x00 }, {  65, 0x04 }, {  66, 0x00 }, {  67, 0x00 },
+	{  64, 0x00 }, {  65, 0x06 }, {  66, 0x00 }, {  67, 0x00 },
 	{  68, 0x00 }, {  69, 0x00 }, {  70, 0x00 }, {  71, 0x00 },
-	{  72, 0x04 }, {  73, 0x00 }, {  74, 0x00 }, {  75, 0x00 },
-	{  76, 0x00 }, {  77, 0x00 }, {  78, 0x00 }, {  79, 0x00 },
+	{  72, 0x06 }, {  73, 0x00 }, {  74, 0x00 }, {  75, 0x00 },
+	{  76, 0x00 }, {  77, 0x00 }, {  78, 0x00 }, {  79, 0x02 },
 	{  80, 0x00 }, {  81, 0x00 }, {  82, 0x00 }, {  83, 0x00 },
-	{  84, 0x00 }, {  85, 0x00 }, {  86, 0x00 }, {  87, 0x00 },
+	{  84, 0x00 }, {  85, 0x00 }, {  86, 0x02 }, {  87, 0x00 },
 	{  88, 0x00 }, {  89, 0x00 }, {  90, 0x00 }, {  91, 0x00 },
-	{  92, 0x00 }, {  93, 0x00 }, {  94, 0x00 }, {  95, 0x00 },
+	{  92, 0x00 }, {  93, 0x02 }, {  94, 0x00 }, {  95, 0x00 },
 	{  96, 0x00 }, {  97, 0x00 }, {  98, 0x00 }, {  99, 0x00 },
 	{ 100, 0x00 }, { 101, 0x00 }, { 102, 0x02 }, { 103, 0x00 },
 	{ 104, 0x00 }, { 105, 0x00 }, { 106, 0x00 }, { 107, 0x00 },
@@ -1374,7 +1374,7 @@ static int aic3x_regulator_event(struct notifier_block *nb,
 		 * of the supplies was disabled
 		 */
 		if (gpio_is_valid(aic3x->gpio_reset))
-			gpio_set_value(aic3x->gpio_reset, 0);
+			gpio_set_value_cansleep(aic3x->gpio_reset, 0);
 		regcache_mark_dirty(aic3x->regmap);
 	}
 
@@ -1396,7 +1396,7 @@ static int aic3x_set_power(struct snd_soc_component *component, int power)
 
 		if (gpio_is_valid(aic3x->gpio_reset)) {
 			udelay(1);
-			gpio_set_value(aic3x->gpio_reset, 1);
+			gpio_set_value_cansleep(aic3x->gpio_reset, 1);
 		}
 
 		/* Sync reg_cache with the hardware */
@@ -1903,7 +1903,7 @@ static int aic3x_i2c_remove(struct i2c_client *client)
 
 	if (gpio_is_valid(aic3x->gpio_reset) &&
 	    !aic3x_is_shared_reset(aic3x)) {
-		gpio_set_value(aic3x->gpio_reset, 0);
+		gpio_set_value_cansleep(aic3x->gpio_reset, 0);
 		gpio_free(aic3x->gpio_reset);
 	}
 	return 0;
