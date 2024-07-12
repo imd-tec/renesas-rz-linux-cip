@@ -47,11 +47,11 @@ static const struct ap1302_format_info supported_video_formats[] = {
 		.code = MEDIA_BUS_FMT_BGR888_1X24,
 		.out_fmt = AP1302_PREVIEW_OUT_FMT_FT_RGB
 			 | AP1302_PREVIEW_OUT_FMT_FST_RGB_888,
-        }, {
-                .code = MEDIA_BUS_FMT_SBGGR8_1X8,
-                .out_fmt = AP1302_PREVIEW_OUT_FMT_FT_RAW8
-                         | AP1302_PREVIEW_OUT_FMT_FST_RAW_CCONV, 
-        },
+	}, {
+		.code = MEDIA_BUS_FMT_SGRBG8_1X8,
+		.out_fmt = AP1302_PREVIEW_OUT_FMT_FT_RAW8
+			 | AP1302_PREVIEW_OUT_FMT_FST_RAW_SENSOR, 
+	},
 };
 
 /* Module parameters */
