@@ -481,11 +481,12 @@ static int rzg2l_cru_s_ctrl(struct v4l2_ctrl *ctrl)
 						 struct rzg2l_cru_dev,
 						 ctrl_handler);
 	int ret = 0;
-
+	cru_dbg(cru,"Number of buffers is being set to %lu \n", HW_BUFFER_DEFAULT);
 	switch (ctrl->id) {
 	case V4L2_CID_MIN_BUFFERS_FOR_CAPTURE:
 		if ((cru->state == STOPPED) || (cru->state == STOPPING))
-			cru->num_buf = ctrl->val;
+			// Always use four buffers so that we have at-least 3x more buffers than slots
+			cru->num_buf = HW_BUFFER_DEFAULT;
 		else
 			ret = -EBUSY;
 
@@ -564,7 +565,7 @@ static int rzg2l_cru_probe(struct platform_device *pdev)
 	v4l2_ctrl_handler_init(&cru->ctrl_handler, 2);
 	ctrl = v4l2_ctrl_new_std(&cru->ctrl_handler, &rzg2l_cru_ctrl_ops,
 			  V4L2_CID_MIN_BUFFERS_FOR_CAPTURE,
-			  2, HW_BUFFER_MAX, 1, HW_BUFFER_DEFAULT);
+			  CRU_V4L_NUM_BUFFERS_MIN, CRU_V4L_NUM_BUFFERS_MAX, 1, CRU_V4L_NUM_BUFFERS_DEFAULT);
 
 	ctrl->flags &= ~V4L2_CTRL_FLAG_READ_ONLY;
 
