@@ -290,8 +290,9 @@ static void rzg2l_cru_buffer_queue(struct vb2_buffer *vb)
 	struct rzg2l_cru_dev *cru = vb2_get_drv_priv(vb->vb2_queue);
 	unsigned long flags;
 
-	spin_lock_irqsave(&cru->qlock, flags);
 
+	spin_lock_irqsave(&cru->qlock, flags);
+	cru_dbg(cru, "begin que: %d\n", vbuf->vb2_buf.index);
 	list_add_tail(to_buf_list(vbuf), &cru->buf_list);
 
 	spin_unlock_irqrestore(&cru->qlock, flags);
@@ -1286,22 +1287,42 @@ static irqreturn_t rzv2h_cru_irq(int irq, void *data)
 	phys_addr |= (((unsigned long) rzg2l_cru_read(cru, AMnMADRSH)) << 32);
 
 	/* Check current HW slot based on current MB address */
+	write_complete = 0;
 	for (slot = 0; slot < cru->num_buf; slot++) {
 		dma_addr_t tmp;
+		dma_addr_t dma_size;
 
 		tmp = amnmbxaddrh[cru->id][slot];
 		tmp = (tmp << 32) | amnmbxaddrl[cru->id][slot];
 
-		tmp = phys_addr - tmp;
-		if (((long) tmp) && (tmp <= cru->format.sizeimage)) {
+		dma_size = phys_addr - tmp;
+		if (((long) dma_size) && (dma_size <= cru->format.sizeimage)) {
 			write_complete = 1;
+			cru_dbg(cru, "write_done: slot %d at 0x%llx. dma_size is 0x%llx\n",  slot, tmp, dma_size);
 			break;
 		}
 	}
 
+	if (slot != prev_slot[cru->id]) {
+		/* Update value of previous memory bank slot */
+		prev_slot[cru->id] = slot;
+	} else {
+		//If we got the same slot as the previous we asume the system is stuck 
+		/*
+		 * AXI-Bus congestion maybe occurred.
+		 * Set auto recovery mode to clear all FIFOs
+		 * and resume transmission.
+		 */
+		rzg2l_cru_write(cru, AMnFIFO, 0);
+
+		cru_dbg(cru, "Reset FIFO and dropping frame %u\n", cru->sequence);
+		goto done;
+	}
+
 	/* Prepare for capture and update state */
 	if (!write_complete) {
-		cru_err(cru, "Invalid MB address 0x%llx\n", phys_addr);
+		//Could not find a slot,  which probably means the CRU is stuck. need to quit here.
+		cru_dbg(cru, "Invalid MB address 0x%llx\n", phys_addr);
 		goto done;
 	}
 
