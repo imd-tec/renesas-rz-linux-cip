@@ -274,6 +274,16 @@
 			};
 		};
 	};
+	/* I3C doesn't appear to work so we are using I2C-GPIO as a workaround so that the DSI->HDMI adapter can be used*/
+	i2c_hdmi: i2c_hdmi {
+		compatible = "i2c-gpio";
+		sda-gpios = <&pinctrl RZG2L_GPIO(2, 0) GPIO_ACTIVE_HIGH>;
+		scl-gpios = <&pinctrl RZG2L_GPIO(2, 1) GPIO_ACTIVE_HIGH>;
+		i2c-gpio,delay-us = <2>;	/* ~100 kHz */
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "okay";
+	};
 
 	udmabuf@0 {
 		compatible = "ikwzm,u-dma-buf";
@@ -408,6 +418,11 @@
 	usb21_pins: usb21 {
 		pinmux = <RZG2L_PORT_PINMUX(6, 6, 14)>, /* VBUS */
 			 <RZG2L_PORT_PINMUX(6, 7, 14)>; /* OVC */
+	};
+
+	i3c_pins: i3c {
+		pinmux = <RZG2L_PORT_PINMUX(2, 0,0 )>, /* GPIO */
+			 <RZG2L_PORT_PINMUX(2, 1,0)>; /* GPIO0 */
 	};
 
 	// spi2_pins: spi2 {
@@ -721,35 +736,6 @@
 	sht4x@44 {
 		compatible = "sensirion,sht4x";
 		reg = <0x44>;
-	};
-
-	adv7533: hdmi@39 {
-		compatible = "adi,adv7533";
-		reg = <0x39>;
-
-		interrupt-parent = <&pinctrl>;
-		interrupts = <RZG2L_GPIO(7, 1) IRQ_TYPE_LEVEL_LOW>;
-
-		adi,dsi-lanes = <4>;
-
-		ports {
-			#address-cells = <1>;
-			#size-cells = <0>;
-
-			port@0 {
-				reg = <0>;
-				adv7533_in: endpoint@0 {
-					remote-endpoint = <&dsi0_out>;
-				};
-			};
-
-			port@1 {
-				reg = <1>;
-				adv7533_out: endpoint@1 {
-					remote-endpoint = <&hdmi_con_out>;
-				};
-			};
-		};
 	};
 };
 
@@ -1140,4 +1126,47 @@
     memory-oca-region = <&opencva0>;
 
     status = "okay";
+};
+// Commented out due to I3C not working as of the latest Renesas BSP release. 
+// &i3c_pins {
+// 	pinmux = <RZG2L_PORT_PINMUX(2, 0,1 )>, /* I3C0 SDA */
+// 	<RZG2L_PORT_PINMUX(2, 1,1)>; /* I3C0 SCL */
+// }
+// &i3c {
+// 	status = "okay"; 
+// 	pinctrl-0 = <&i3c_pins>;
+// 	pinctrl-names = "default";
+// };
+
+&i2c_hdmi {
+	// DSI->HDMI adapter added to I2C-HDMI which is a SW bit-banged I2C interface.
+	// This has to be used as the Renesas I3C driver doesn't appear to work or is not fully backwards compatible with buses that feature only I2C devices
+	adv7533: hdmi@39 {
+		compatible = "adi,adv7533";
+		reg = <0x39>; // When using I3C, this should be reg = <0x39 0 0 >
+
+		interrupt-parent = <&pinctrl>;
+		interrupts = <RZG2L_GPIO(7, 1) IRQ_TYPE_LEVEL_LOW>;
+
+		adi,dsi-lanes = <4>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				adv7533_in: endpoint@0 {
+					remote-endpoint = <&dsi0_out>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				adv7533_out: endpoint@1 {
+					remote-endpoint = <&hdmi_con_out>;
+				};
+			};
+		};
+	};
 };
