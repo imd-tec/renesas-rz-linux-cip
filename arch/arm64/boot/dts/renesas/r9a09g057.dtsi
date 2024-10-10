@@ -228,6 +228,46 @@
 			status = "disabled";
 		};
 
+		adc: adc@11c00000 {
+			compatible = "renesas,r9a09g057-adc", "renesas,rzv2h-adc";
+			reg = <0 0x11C00000 0 0x400>;
+			clocks = <&cpg CPG_MOD R9A09G057_ADC_ADCLK>,
+				 <&cpg CPG_MOD R9A09G057_ADC_PCLK>;
+			clock-names = "adclk", "pclk";
+			resets =  <&cpg R9A09G057_ADC_ADRST_N>;
+			reset-names = "adrst-n";
+			power-domains = <&cpg>;
+			status = "disabled";
+
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			channel@0 {
+				reg = <0>;
+			};
+			channel@1 {
+				reg = <1>;
+			};
+			channel@2 {
+				reg = <2>;
+			};
+			channel@3 {
+				reg = <3>;
+			};
+			channel@4 {
+				reg = <4>;
+			};
+			channel@5 {
+				reg = <5>;
+			};
+			channel@6 {
+				reg = <6>;
+			};
+			channel@7 {
+				reg = <7>;
+			};
+		};
+
 		pinctrl: pinctrl@10410000 {
 			compatible = "renesas,r9a09g057-pinctrl";
 			reg = <0 0x10410000 0 0x10000>, <0 0x10400020 0 0x30>;
@@ -347,7 +387,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI0_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI0_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI0_PRESETN>,
+				 <&cpg R9A09G057_RSCI0_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -363,7 +405,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI1_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI1_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI1_PRESETN>,
+				 <&cpg R9A09G057_RSCI1_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -379,7 +423,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI2_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI2_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI2_PRESETN>,
+				 <&cpg R9A09G057_RSCI2_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -395,7 +441,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI3_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI3_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI3_PRESETN>,
+				 <&cpg R9A09G057_RSCI3_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -411,7 +459,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI4_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI4_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI4_PRESETN>,
+				 <&cpg R9A09G057_RSCI4_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -427,7 +477,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI5_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI5_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI5_PRESETN>,
+				 <&cpg R9A09G057_RSCI5_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -443,7 +495,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI6_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI6_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI6_PRESETN>,
+				 <&cpg R9A09G057_RSCI6_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -459,7 +513,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI7_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI7_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI7_PRESETN>,
+				 <&cpg R9A09G057_RSCI7_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -475,7 +531,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI8_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI8_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI8_PRESETN>,
+				 <&cpg R9A09G057_RSCI8_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -491,7 +549,9 @@
 				<&cpg CPG_MOD R9A09G057_RSCI9_TCLK>;
 			clock-names = "fck", "tclk";
 			power-domains = <&cpg>;
-			resets = <&cpg R9A09G057_RSCI9_PRESETN>;
+			resets = <&cpg R9A09G057_RSCI9_PRESETN>,
+				 <&cpg R9A09G057_RSCI9_TRESETN>;
+			reset-names = "presetn", "tresetn";
 			status = "disabled";
 		};
 
@@ -980,6 +1040,26 @@
 			power-domains = <&cpg>;
 			#reset-cells = <1>;
 			status = "disabled";
+		};
+
+		tsu0: thermal@11000000 {
+			compatible = "renesas,tsu-r9a09g057";
+			reg = <0 0x11000000 0 0x1000>;
+			clocks = <&cpg CPG_MOD R9A09G057_TSU0_PCLK>;
+			resets = <&cpg R9A09G057_TSU0_PRESETN>;
+			power-domains = <&cpg>;
+			tsu,channel = <0>;
+			#thermal-sensor-cells = <1>;
+		};
+
+		tsu1: thermal@14002000 {
+			compatible = "renesas,tsu-r9a09g057";
+			reg = <0 0x14002000 0 0x1000>;
+			clocks = <&cpg CPG_MOD R9A09G057_TSU1_PCLK>;
+			resets = <&cpg R9A09G057_TSU1_PRESETN>;
+			power-domains = <&cpg>;
+			tsu,channel = <1>;
+			#thermal-sensor-cells = <1>;
 		};
 
 		ohci0: usb@15800000 {
@@ -2198,6 +2278,45 @@
 					interrupts = <GIC_SPI 901 IRQ_TYPE_LEVEL_HIGH>;
 					dmas = <&dmac1 0x051D9E>, <&dmac2 0x041D9D>;
 					dma-names = "tx", "rx";
+				};
+			};
+		};
+	};
+
+	thermal-zones {
+		emergency {
+			polling-delay = <1000>;
+			on-temperature = <110000>;
+			off-temperature = <95000>;
+			target_cpus =   <&cpu1 &cpu2 &cpu3>;
+			status = "disabled";
+		};
+
+		sensor_thermal0: sensor-thermal0 {
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+			thermal-sensors = <&tsu0 0>;
+
+			trips {
+				sensor0_crit: sensor0-crit {
+					temperature = <120000>;
+					hysteresis = <1000>;
+					type = "critical";
+				};
+
+			};
+		};
+
+		sensor_thermal1: sensor-thermal1 {
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+			thermal-sensors = <&tsu1 0>;
+
+			trips {
+				sensor1_crit: sensor1-crit {
+					temperature = <120000>;
+					hysteresis = <1000>;
+					type = "critical";
 				};
 			};
 		};
