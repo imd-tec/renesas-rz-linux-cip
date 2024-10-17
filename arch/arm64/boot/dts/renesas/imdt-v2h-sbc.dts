@@ -1115,18 +1115,6 @@
 	shared-pin;
 };
 
-&drpai0 {
-	memory-region = <&drp_reserved>;
-	image-memory-region = <&image_buf0>;
-	status = "okay";
-};
-
-&drp1 {
-    memory-region = <&codec0>;
-    memory-oca-region = <&opencva0>;
-
-    status = "okay";
-};
 // Commented out due to I3C not working as of the latest Renesas BSP release. 
 // &i3c_pins {
 // 	pinmux = <RZG2L_PORT_PINMUX(2, 0,1 )>, /* I3C0 SDA */
