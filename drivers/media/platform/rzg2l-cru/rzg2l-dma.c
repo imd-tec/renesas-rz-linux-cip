@@ -439,6 +439,7 @@ static void rzg2l_cru_fill_hw_slot(struct rzg2l_cru_dev *cru, int slot)
 	cru_dbg(cru, "Filling HW slot: %d\n", slot);
 
 	if (list_empty(&cru->buf_list)) {
+		cru_dbg(cru, "Using scratch buffer due to lack of free buffers \n");
 		cru->queue_buf[slot] = NULL;
 		phys_addr = cru->scratch_phys;
 	} else {

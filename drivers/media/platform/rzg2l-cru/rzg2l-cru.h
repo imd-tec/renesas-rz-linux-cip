@@ -149,6 +149,10 @@ static const struct regs_offset rzv2h_cru_regs_offset[] = {
 #define HW_BUFFER_MAX		8
 #define HW_BUFFER_DEFAULT	4
 
+#define CRU_V4L_NUM_BUFFERS_MIN 12
+#define CRU_V4L_NUM_BUFFERS_MAX 20
+#define CRU_V4L_NUM_BUFFERS_DEFAULT 12
+
 /* Number of HW Bus Transfer Completion Events */
 #define HW_IVT_MAX		5
 
