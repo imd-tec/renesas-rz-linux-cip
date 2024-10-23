@@ -109,6 +109,7 @@ struct rzv2h_pcie_host {
 	struct irq_domain	*intx_domain;
 	struct reset_control    *rst;
 	int			channel;
+	struct regulator *vdd;
 };
 
 static int rzv2h_pcie_hw_init(struct rzv2h_pcie *pcie, int channel);
@@ -1196,7 +1197,12 @@ static const struct of_device_id rzv2h_pcie_of_match[] = {
 	{ .compatible = "renesas,rzv2h-pcie", },
 	{},
 };
+static void rzv2_pcie_remove(void *data)
+{
+	struct rzv2h_pcie_host *host = data;
 
+	regulator_disable(host->vdd);
+}
 static int rzv2h_pcie_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -1206,6 +1212,7 @@ static int rzv2h_pcie_probe(struct platform_device *pdev)
 	int err, channel;
 	struct pci_host_bridge *bridge;
 	struct arm_smccc_res local_res;
+	int ret;
 
 	dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
 
@@ -1230,6 +1237,22 @@ static int rzv2h_pcie_probe(struct platform_device *pdev)
 		dev_err(pcie->dev, "%pOF: Invalid pcie,channel '%u'\n",
 				dev->of_node, host->channel);
 		return -EINVAL;
+	}
+	/*Enable the regulator used for PCIE devices*/
+	host->vdd = devm_regulator_get_optional(pcie->dev, "vdd");
+	if (IS_ERR(host->vdd)) {
+		dev_dbg(pcie->dev,"Deferring load due to regulator not being ready \n");
+		if (PTR_ERR(host->vdd) == -EPROBE_DEFER)
+			return -EPROBE_DEFER;
+		host->vdd = NULL;
+	} else {
+		dev_dbg(pcie->dev, "Enabling PCIE regulator \n");
+		ret = regulator_enable(host->vdd);
+		if (ret)
+			return ret;
+		ret = devm_add_action_or_reset(pcie->dev, rzv2_pcie_remove, host);
+		if (ret)
+			return ret;
 	}
 
 	/* Set the Root Complex mode by the PCI Device Type setting register */
