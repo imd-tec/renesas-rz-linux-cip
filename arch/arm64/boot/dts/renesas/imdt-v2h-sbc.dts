@@ -188,6 +188,20 @@
 		startup-delay-us = <100000>;
 		enable-active-high;
 	};
+	// Regulator for the M2 Key M slot
+	VM2M_3V3: VM2M_en-3-3v {
+		compatible = "regulator-fixed";
+
+		regulator-name = "V2M_3V3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+
+		gpio = <&m2_gpio 5 GPIO_ACTIVE_HIGH>;
+
+		startup-delay-us = <100000>;
+		enable-active-high;
+		regulator-always-on; // Enable at boot
+	};
 
 	hdmi-out {
 		compatible = "hdmi-connector";
@@ -804,12 +818,6 @@
 			"M2B_WAKE_HOST", 
 			"M2E_BT_ENn", 
 			"M2E_WLAN_ENn";
-			
-		m2b-pd-en-hog {
-			gpio-hog;
-			gpios = <5 GPIO_ACTIVE_HIGH>;
-			output-high;
-		};
 		
 		// TODO: define GPIO hogs and Interrupt GPIO
 		// interrupt-parent = <&pinctrl>;
@@ -917,8 +925,11 @@
 &pcie0 {
 	/* Map all possible DDR as inbound ranges */
 	dma-ranges = <0x42000000 0 0x40000000 0 0x40000000 0x4 0x00000000>;
-
+	vdd-supply = <&VM2M_3V3>;
 	status = "okay";
+};
+&pcie1 {
+	vdd-supply = <&VM2M_3V3>;
 };
 
 &cru0 {
