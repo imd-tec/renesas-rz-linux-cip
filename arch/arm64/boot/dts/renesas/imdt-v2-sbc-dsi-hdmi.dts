@@ -6,7 +6,6 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
-    compatible = "imdt,v2h-sbc", "renesas,r9a09g057h4", "renesas,r9a09g057";
 
     hdmi-out {
         compatible = "hdmi-connector";
