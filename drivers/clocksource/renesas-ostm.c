@@ -94,16 +94,6 @@ static void ostm_clksrc_resume(struct clocksource *c)
 	writeb(TS, timer_of_base(to) + OSTM_TS);
 }
 
-static void ostm_clksrc_suspend(struct clocksource *c)
-{
-	struct ostm_clksrc *ostm_clksrc =
-			container_of(c, struct ostm_clksrc, clksrc);
-	struct timer_of *to = ostm_clksrc->to;
-
-	clk_disable_unprepare(to->of_clk.clk);
-	reset_control_assert(ostm_clksrc->rstc);
-}
-
 static u64 ostm_clksrc_readl_up(struct clocksource *c)
 {
 	struct ostm_clksrc *ostm_clksrc =

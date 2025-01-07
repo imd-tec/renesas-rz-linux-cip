@@ -711,8 +711,7 @@
 	vqmmc-supply = <&vccq_sdhi0>;
 
 	bus-width = <4>;
-	sd-uhs-sdr50;
-	sd-uhs-sdr104;
+
 	status = "okay";
 };
 #endif
@@ -1033,4 +1032,9 @@
 
 &ssi4 {
 	shared-pin;
+};
+&drpai0 {
+	memory-region = <&drp_reserved>;
+	image-memory-region = <&image_buf0>;
+	status = "okay";
 };
