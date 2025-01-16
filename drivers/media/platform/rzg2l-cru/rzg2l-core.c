@@ -481,12 +481,12 @@ static int rzg2l_cru_s_ctrl(struct v4l2_ctrl *ctrl)
 						 struct rzg2l_cru_dev,
 						 ctrl_handler);
 	int ret = 0;
-	cru_dbg(cru,"Number of buffers is being set to %lu \n", HW_BUFFER_DEFAULT);
+	cru_dbg(cru,"Number of buffers is being set to %lu \n", HW_BUFFER_VALUE);
 	switch (ctrl->id) {
 	case V4L2_CID_MIN_BUFFERS_FOR_CAPTURE:
 		if ((cru->state == STOPPED) || (cru->state == STOPPING))
-			// Always use four buffers so that we have at-least 3x more buffers than slots
-			cru->num_buf = HW_BUFFER_DEFAULT;
+			// Always use four buffers, this results in the least frame drops
+			cru->num_buf = HW_BUFFER_VALUE;
 		else
 			ret = -EBUSY;
 
