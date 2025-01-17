@@ -99,3 +99,5 @@ dtb-$(CONFIG_ARCH_R9A09G057) += r9a09g057h4-dev.dtb
 dtb-$(CONFIG_ARCH_R9A09G057) += r9a09g057h4-evk-alpha.dtb
 dtb-$(CONFIG_ARCH_R9A09G057) += r9a09g057h4-evk-ver1.dtb
 dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2h-sbc.dtb
+dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-panel.dtb
+dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-hdmi.dtb
