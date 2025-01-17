@@ -333,13 +333,13 @@
 	clock-frequency = <22579200>;
 };
 
-&audio_clkb {
-	clock-frequency = <24576000>;
-};
+// &audio_clkb {
+// 	clock-frequency = <24576000>;
+// };
 
-&audio_clkc {
-	clock-frequency = <22579200>;
-};
+// &audio_clkc {
+// 	clock-frequency = <22579200>;
+// };
 
 &pinctrl {
 #if (DSW3_CAN01_HEADER)
