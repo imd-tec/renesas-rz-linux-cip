@@ -6,8 +6,6 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
-    compatible = "imdt,v2h-sbc", "renesas,r9a09g057h4", "renesas,r9a09g057";
-
     i2c_hdmi: i2c_hdmi {
         compatible = "i2c-gpio";
         sda-gpios = <&pinctrl RZG2L_GPIO(2, 0) GPIO_ACTIVE_HIGH>;
