@@ -6,8 +6,7 @@
 #include <dt-bindings/gpio/gpio.h>
 
 / {
-    compatible = "imdt,v2h-sbc", "renesas,r9a09g057h4", "renesas,r9a09g057";
-	
+
 	disp_reg: dsi0_display_3v3 {
     	compatible = "regulator-fixed";
 		regulator-name = "dsi0 disp regulator";
@@ -25,6 +24,19 @@
 		gpios = <RZG2L_GPIO(10, 7) GPIO_ACTIVE_HIGH>;
 		output-high;
 		line-name = "disp_bl_en";
+	};
+};
+
+&dsi_adaptor_i2c {
+	status = "okay";
+	touch: gt911@14 {
+		compatible = "goodix,gt911";
+		reg = <0x14>;
+		status = "okay";
+		interrupt-parent = <&pinctrl>;
+        interrupts = <RZG2L_GPIO(7, 1) IRQ_TYPE_LEVEL_LOW>;
+		irq-gpios = <&pinctrl RZG2L_GPIO(7, 1) GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&pinctrl RZG2L_GPIO(4, 3) GPIO_ACTIVE_HIGH>; // this pin conflicts with i2c5_sda of the base dts
 	};
 };
 
