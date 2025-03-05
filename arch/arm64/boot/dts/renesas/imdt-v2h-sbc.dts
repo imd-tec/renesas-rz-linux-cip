@@ -17,6 +17,7 @@
 		device_type = "memory";
 		reg = <0x2 0x40000000 0x2 0x00000000>;
 	};
+	
 	aliases {
 		serial0 = &scif0;
 		serial1 = &sci0;
@@ -28,6 +29,7 @@
 		ethernet0 = &eth0;
 		ethernet1 = &eth1;
 	};
+
 	reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
@@ -80,49 +82,17 @@
 	/* output from 5L35023B */
 	clock-frequency = <22579200>;
 };
+
 &sci0 {
 	pinctrl-0 = <&sci0_pins>;
 	pinctrl-names = "default";
 	status = "okay";
 };
+
 &pcie1 {
 	vdd-supply = <&VM2M_3V3>;
 };
-&cru2 {
-	status = "okay";
-};
 
-&csi22 {
-	// status = "okay";
-
-	// ports {
-	// 	port {
-	// 		csi22_in: endpoint {
-	// 			clock-lanes = <0>;
-	// 			data-lanes = <1 2>;
-	// 			remote-endpoint = <&ov5645_to_csi22>;
-	// 		};
-	// 	};
-	// };
-};
-
-&cru3 {
-	status = "okay";
-};
-
-&csi23 {
-	// status = "okay";
-
-	// ports {
-	// 	port {
-	// 		csi23_in: endpoint {
-	// 			clock-lanes = <0>;
-	// 			data-lanes = <1 2>;
-	// 			remote-endpoint = <&ov5645_to_csi23>;
-	// 		};
-	// 	};
-	// };
-};
 &xhci1 {
 	pinctrl-0 = <&usb31_pins>;
 	pinctrl-names = "default";
@@ -130,25 +100,30 @@
 	memory-region = <&global_cma>;
 	status = "okay";
 };
+
 &usb21phyrst {
 	status = "okay";
 };
+
 &ohci1 {
 	memory-region = <&global_cma>;
 
 	status = "okay";
 };
+
 &ehci1 {
 	memory-region = <&global_cma>;
 
 	status = "okay";
 };
+
 &usb2_phy1 {
 	pinctrl-0 = <&usb21_pins>;
 	pinctrl-names = "default";
 
 	status = "okay";
 };
+
 &canfd {
 	pinctrl-0 = <&can1_pins>;
 	pinctrl-names = "default";
@@ -158,12 +133,15 @@
 		status = "okay";
 	};
 };
+
 &ssi4 {
 	shared-pin;
 };
+
 &adc {
 	status = "okay";
 };
+
 &rcar_sound {
      
 	pinctrl-names = "default";
@@ -181,24 +159,4 @@
 			capture  = <&ssi4>;
 		};
 	};
-};
-ssi_link: simple-audio-card,dai-link@0 {
-	format = "i2s";
-	reg = <0>;
-	bitclock-master = <&cpu_dai0>;
-	frame-master = <&cpu_dai0>;
-	mclk-fs = <256>;
-	
-	cpu_dai0: cpu {
-		sound-dai = <&rcar_sound>;
-	};
-
-	codec {
-		sound-dai = <&tlv320aic3x>;
-	};
-// Note - DRP AI kernel module is needed
-&drpai0 {
-	memory-region = <&drp_reserved>;
-	image-memory-region = <&image_buf0>;
-	status = "okay";
 };
