@@ -78,11 +78,6 @@
 
 };
 
-&audio_clka {
-	/* output from 5L35023B */
-	clock-frequency = <22579200>;
-};
-
 &sci0 {
 	pinctrl-0 = <&sci0_pins>;
 	pinctrl-names = "default";
@@ -124,39 +119,6 @@
 	status = "okay";
 };
 
-&canfd {
-	pinctrl-0 = <&can1_pins>;
-	pinctrl-names = "default";
-	status = "okay";
-	//renesas,no-can-fd; - enables classic CAN
-	channel1 {
-		status = "okay";
-	};
-};
-
-&ssi4 {
-	shared-pin;
-};
-
 &adc {
 	status = "okay";
-};
-
-&rcar_sound {
-     
-	pinctrl-names = "default";
-	pinctrl-0 = <&sound_pins>;
-	status = "okay";
-
-	/* audio_clkout */
-	#clock-cells = <0>;
-	clock-frequency = <12288000>; /* should select audio_clka */
-	#sound-dai-cells = <0>;
-
-	rcar_sound,dai {
-		dai0 {
-			playback = <&ssi3>;
-			capture  = <&ssi4>;
-		};
-	};
 };
