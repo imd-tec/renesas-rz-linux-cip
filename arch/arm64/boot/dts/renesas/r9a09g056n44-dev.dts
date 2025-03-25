@@ -765,8 +765,3 @@
 	status ="okay";
 };
 
-&drpai0 {
-	memory-region = <&drp_reserved>;
-	image-memory-region = <&image_buf0>;
-	status = "okay";
-};
