@@ -1312,22 +1312,6 @@ static irqreturn_t rzv2h_cru_irq(int irq, void *data)
 		}
 	}
 
-	if (slot != prev_slot[cru->id]) {
-		/* Update value of previous memory bank slot */
-		prev_slot[cru->id] = slot;
-	} else {
-		//If we got the same slot as the previous we asume the system is stuck 
-		/*
-		 * AXI-Bus congestion maybe occurred.
-		 * Set auto recovery mode to clear all FIFOs
-		 * and resume transmission.
-		 */
-		rzg2l_cru_write(cru, AMnFIFO, 0);
-
-		cru_dbg(cru, "Reset FIFO and dropping frame %u\n", cru->sequence);
-		goto done;
-	}
-
 	/* Prepare for capture and update state */
 	if (!write_complete) {
 		//Could not find a slot,  which probably means the CRU is stuck. need to quit here.
