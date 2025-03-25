@@ -185,7 +185,21 @@
              "MIC2R", "Microphone Jack",
              "Microphone Jack", "Mic Bias";
  
-    
+		ssi_link: simple-audio-card,dai-link@0 {
+			format = "i2s";
+			reg = <0>;
+			bitclock-master = <&cpu_dai0>;
+			frame-master = <&cpu_dai0>;
+			mclk-fs = <256>;
+			
+			cpu_dai0: cpu {
+				sound-dai = <&rcar_sound>;
+			};
+
+			codec {
+				sound-dai = <&tlv320aic3x>;
+			};
+		};
      };
  
      udmabuf@0 {
@@ -206,7 +220,11 @@
 		#size-cells = <0>;
 		status = "disabled";
 	};
+};
 
+&audio_clka {
+	/* output from 5L35023B */
+	clock-frequency = <22579200>;
  }; 
  
  &pinctrl {
@@ -895,6 +913,15 @@
      status = "okay";
  };
  
+&canfd {
+	pinctrl-0 = <&can1_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+	//renesas,no-can-fd; - enables classic CAN
+	channel1 {
+		status = "okay";
+	};
+};
  
  &wdt1 {
      status = "okay";
@@ -913,3 +940,26 @@
      };
  };
  
+ &rcar_sound {
+	
+	pinctrl-names = "default";
+	pinctrl-0 = <&sound_pins>;
+	status = "okay";
+
+	/* audio_clkout */
+	#clock-cells = <0>;
+	clock-frequency = <12288000>; /* should select audio_clka */
+	#sound-dai-cells = <0>;
+
+	rcar_sound,dai {
+		dai0 {
+			playback = <&ssi3>;
+			capture  = <&ssi4>;
+		};
+	};
+};
+
+&ssi4 {
+	shared-pin;
+};
+
