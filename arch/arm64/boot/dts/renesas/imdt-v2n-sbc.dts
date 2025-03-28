@@ -36,12 +36,28 @@
 		mmp_reserved: linux,multimedia {
 			compatible = "shared-dma-pool";
 			reusable;
-			reg = <0x00000000 0x68000000 0x0 0x20000000>;
+			reg = <0x00000000 0x68000000 0x0 0x18000000>;
 		};
 
-		drp_reserved: DRP-AI@80000000 {
+		isp: ISP@90000000 {
+			compatible = "shared-dma-pool";
 			reusable;
-			reg = <0x0 0x80000000 0x0 0x20000000>;
+			reg = <0x0 0x90000000 0x0 0x18000000>;
+		};
+
+		opencva_reserved: OpenCVA@A8000000 {
+			reusable;
+			reg = <0x0 0xA8000000 0x0 0x7CFF000>;
+		};
+
+		shared_drp_reserved: SharedDRP@AFCFF000 {
+			reusable;
+			reg = <0x0 0xAFCFF000 0x0 0x00001000>;
+		};
+
+		drp_codec: DRP-Codec@AFD00000 {
+			reusable;
+			reg = <0x0 0xAFD00000 0x0 0x300000>;
 		};
 
 		image_buf0: image_buf@B0000000 {
@@ -50,8 +66,19 @@
 			reg = <0x0 0xB0000000 0x0 0x4000000>;
 			label = "image_buf0";
 		};
+
+		cru_func: cru_buffer@B4000000 {
+			compatible = "shared-dma-pool";
+			reusable;
+			reg = <0x0 0xB4000000 0x0 0x16400000>;
+		};
+
+		drp_reserved: DRP-AI@D0000000 {
+			reusable;
+			reg = <0x0 0xD0000000 0x0 0x20000000>;
+		};
 	};
-	
+
 };
 &adc0 {
 	status = "okay";
@@ -64,9 +91,4 @@
 &adc2 {
 	status = "okay";
 };
-// Note - DRP AI kernel module is needed
-&drpai0 {
-	memory-region = <&drp_reserved>;
-	image-memory-region = <&image_buf0>;
-	status = "okay";
-};
+
