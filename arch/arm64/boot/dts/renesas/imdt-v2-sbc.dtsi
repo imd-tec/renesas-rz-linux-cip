@@ -122,9 +122,8 @@
  
          gpio = <&m2_gpio 5 GPIO_ACTIVE_HIGH>;
  
-         startup-delay-us = <200000>;
+         startup-delay-us = <5000>; /* Measured to take 0.5ms using a scope, set to 5ms so there's a safety factor to ensure the regulator is stable */
          enable-active-high;
-         regulator-always-on; // Enable at boot
      };
  
      clk_ext_camera: clk_ext_camera {

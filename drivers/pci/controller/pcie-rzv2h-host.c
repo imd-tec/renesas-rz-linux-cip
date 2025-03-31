@@ -26,7 +26,7 @@
 #include <linux/reset.h>
 #include <linux/arm-smccc.h>
 #include <uapi/linux/psci.h>
-
+#include <linux/reboot.h>
 #include "pcie-rzv2h.h"
 
 struct rzv2h_msi {
@@ -90,7 +90,9 @@ static u32 r_device_serial_number_capability[] = {
 	0x00000000,
 	0x00000000
 };
-
+#define REGULATOR_DISABLE_SLEEP_TIME_MS 25 /* Chosen to be 25 ms as this is a generous amount of time for a regulator to turn off*/
+#define POST_RESET_SLEEP_TIME_MS 1         /* 1ms sleep to give time for the Reset pin to assert */
+#define CLOCK_STABLE_SLEEP_TIME_MS 100     /* PCIE spec requires that the reset pulse width isat least 100ms */
 
 static inline struct rzv2h_msi *to_rzv2h_msi(struct msi_controller *chip)
 {
@@ -110,10 +112,18 @@ struct rzv2h_pcie_host {
 	struct reset_control    *rst;
 	int			channel;
 	struct regulator *vdd;
+	struct notifier_block reboot_nb;
 };
 
-static int rzv2h_pcie_hw_init(struct rzv2h_pcie *pcie, int channel);
+static int rzv2h_pcie_hw_init(struct rzv2h_pcie *pcie, int channel, struct rzv2h_pcie_host * host );
 
+static int rzv2h_reboot_notifier_cb(struct notifier_block *nb, unsigned long action, void *data)
+{
+    struct rzv2h_pcie_host *host = container_of(nb, struct rzv2h_pcie_host, reboot_nb);
+    dev_dbg(host->dev, "System reboot requested, disabling M2 3.3V regulator\n");
+    regulator_force_disable(host->vdd);
+    return NOTIFY_OK;
+}
 static int rzv2h_pcie_request_issue(struct rzv2h_pcie *pcie, struct pci_bus *bus)
 {
 	int i;
@@ -587,14 +597,35 @@ static int PCIE_INT_Initialize(struct rzv2h_pcie *pcie)
 	return 0;
 }
 
-static int rzv2h_pcie_hw_init(struct rzv2h_pcie *pcie, int channel)
+static int rzv2h_pcie_hw_init(struct rzv2h_pcie *pcie, int channel,	struct rzv2h_pcie_host * host )
 {
 	unsigned int timeout = 50;
 	struct arm_smccc_res local_res;
-
+	int ret = 0;
+	/* This function is called from two contexts:
+	1. A Fresh probe (The VDD regulator will already be disabled)
+	2. A suspend after a power management suspend (The VDD regulator may already be enabled)
+	For case 2, it makes sense to make the power sequencing the same as case 1 by disabling the regulator explictly.
+	*/
+	
+	if(regulator_is_enabled(host->vdd))
+	{
+	    dev_dbg(pcie->dev, "Disabling M2M 3.3V regulator \n");
+    	ret = regulator_disable(host->vdd);
+    	if (ret)
+    		return ret;
+        msleep(REGULATOR_DISABLE_SLEEP_TIME_MS); // Give time for the regulator to fully turn off
+	}
 	/* Set to the PCIe reset state   : step6 */
 	rzv2h_pci_write_reg(pcie, RESET_ALL_ASSERT, PCI_RC_RESET_REG);			/* Set PCI_RC 310h */
-
+	msleep(POST_RESET_SLEEP_TIME_MS);
+	/* Enable the PCIE VDD regulator whilst the reset is asserted */
+	dev_dbg(pcie->dev, "Enabling M2M 3.3V regulator \n");
+	ret = regulator_enable(host->vdd); /*Note: This will sleep according to your startup delay in the device tree*/
+	if (ret)
+		return ret;
+	host->reboot_nb.notifier_call = rzv2h_reboot_notifier_cb;
+	ret = register_reboot_notifier(&host->reboot_nb);
 	/* Release the PCIe reset : step10 : RST_LOAD_B, RST_CFG_B)*/
 	rzv2h_pci_write_reg(pcie, RESET_LOAD_CFG_RELEASE, PCI_RC_RESET_REG);	/* Set PCI_RC 310h */
 
@@ -612,7 +643,7 @@ static int rzv2h_pcie_hw_init(struct rzv2h_pcie *pcie, int channel)
 	/* Release the PCIe reset : step14 : RST_PS_B, RST_GP_B, RST_B */
 	rzv2h_pci_write_reg(pcie, RESET_PS_GP_RELEASE, PCI_RC_RESET_REG);		/* Set PCI_RC 310h */
 
-	msleep(1);
+	msleep(CLOCK_STABLE_SLEEP_TIME_MS); /*This is to ensure that the clock is stable and also that the pulse width is 100ms */
 
 	/* Release the PCIe reset : step16 : RST_OUT_B, RST_RSM_B) */
 	rzv2h_pci_write_reg(pcie, RESET_ALL_DEASSERT,  PCI_RC_RESET_REG);		/* Set PCI_RC 310h */
@@ -1198,12 +1229,7 @@ static const struct of_device_id rzv2h_pcie_of_match[] = {
 	{ .compatible = "renesas,rzv2n-pcie", },
 	{},
 };
-static void rzv2_pcie_remove(void *data)
-{
-	struct rzv2h_pcie_host *host = data;
 
-	regulator_disable(host->vdd);
-}
 static int rzv2h_pcie_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -1213,7 +1239,6 @@ static int rzv2h_pcie_probe(struct platform_device *pdev)
 	int err, channel;
 	struct pci_host_bridge *bridge;
 	struct arm_smccc_res local_res;
-	int ret;
 
 	dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
 
@@ -1239,23 +1264,14 @@ static int rzv2h_pcie_probe(struct platform_device *pdev)
 				dev->of_node, host->channel);
 		return -EINVAL;
 	}
-	/*Enable the regulator used for PCIE devices*/
+	/*Obtain the regulator handle used for PCIE devices*/
 	host->vdd = devm_regulator_get_optional(pcie->dev, "vdd");
 	if (IS_ERR(host->vdd)) {
 		dev_dbg(pcie->dev,"Deferring load due to regulator not being ready \n");
 		if (PTR_ERR(host->vdd) == -EPROBE_DEFER)
 			return -EPROBE_DEFER;
 		host->vdd = NULL;
-	} else {
-		dev_dbg(pcie->dev, "Enabling PCIE regulator \n");
-		ret = regulator_enable(host->vdd);
-		if (ret)
-			return ret;
-		ret = devm_add_action_or_reset(pcie->dev, rzv2_pcie_remove, host);
-		if (ret)
-			return ret;
 	}
-
 	/* Set the Root Complex mode by the PCI Device Type setting register */
 	if (!host->channel)
 		arm_smccc_smc(RZ_SIP_SVC_SET_SYSPCIE, 0x1024, 0x1, 0, 0, 0, 0, 0, &local_res);
@@ -1293,7 +1309,7 @@ static int rzv2h_pcie_probe(struct platform_device *pdev)
 	if (err)
 		return err;
 
-	err = rzv2h_pcie_hw_init(pcie, host->channel);
+	err = rzv2h_pcie_hw_init(pcie, host->channel, host);
 	if (err) {
 		dev_info(&pdev->dev, "PCIe link down\n");
 		return 0;
@@ -1356,7 +1372,7 @@ static int rzv2h_pcie_resume(struct device *dev)
 	if (rzv2h_pci_read_reg(pcie, AXI_WINDOW_BASEL_REG(0)) !=
 		pcie->save_reg.axi_window.base[0]) {
 
-		err = rzv2h_pcie_hw_init(pcie, host->channel);
+		err = rzv2h_pcie_hw_init(pcie, host->channel,host);
 		if (err) {
 			dev_info(pcie->dev, "resume PCIe link down\n");
 			return err;
@@ -1385,7 +1401,17 @@ static int rzv2h_pcie_resume(struct device *dev)
 
 	return 0;
 }
+static int rzv2_pcie_drv_remove(struct platform_device *pdev)
+{
+    struct rzv2h_pcie_host *host = platform_get_drvdata(pdev);
+    if(!host)
+        return -ENODEV;
+    dev_info(&pdev->dev, "Removing RZV2H PCIe driver\n");
+    if(regulator_is_enabled(host->vdd))
+        regulator_disable(host->vdd);
 
+    return 0;
+}
 static struct dev_pm_ops rzv2h_pcie_pm_ops = {
 	.suspend_noirq =	rzv2h_pcie_suspend,
 	.resume_noirq =		rzv2h_pcie_resume,
@@ -1399,6 +1425,7 @@ static struct platform_driver rzv2h_pcie_driver = {
 		.suppress_bind_attrs = true,
 	},
 	.probe = rzv2h_pcie_probe,
+	.remove = rzv2_pcie_drv_remove,
 };
 builtin_platform_driver(rzv2h_pcie_driver);
 
