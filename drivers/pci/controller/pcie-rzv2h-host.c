@@ -686,7 +686,7 @@ static int pcie_kthread(void *arg)
 		if (pcie_thread_status == RZV2_PCIE_THREAD_RESET) {
 			dev_info(tmp_pcie->dev, "PCIe link down\n");
 
-			mdelay(1000);
+			msleep(1000);
 			reg = rzv2h_pci_read_reg(tmp_pcie, PCIE_CORE_STATUS_1_REG);
 			if ((reg & LTSSM_ST_ALL_MASK) == LTSSM_ST_DETECT) {
 				reg = rzv2h_pci_read_reg(tmp_pcie, PCIE_CORE_STATUS_2_REG);
@@ -721,7 +721,7 @@ static int pcie_kthread(void *arg)
 				}
 			}
 		} else
-			mdelay(1000);
+			msleep(1000);
 	}
 	return 0;
 }
