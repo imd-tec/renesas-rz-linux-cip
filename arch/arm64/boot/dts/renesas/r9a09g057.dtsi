@@ -1463,7 +1463,7 @@
 				 <&cpg CPG_MOD R9A09G057_PCIE_CLK_PMU>;
 			power-domains = <&cpg>;
 			resets = <&cpg R9A09G057_PCIE_ARESETN>;
-			ranges = <0x02000000 0x0 0x30000000 0x0 0x30000000 0x0 0x00200000>;
+			ranges = <0x03000000 0x0 0x30000000 0x0 0x30000000 0x0 0x08000000>;
 			dma-ranges = <0x42000000 0 0x40000000 0 0x40000000 0 0x80000000>;
 			interrupts = <GIC_SPI 791 IRQ_TYPE_LEVEL_HIGH>;
 			#interrupt-cells = <1>;
@@ -1831,6 +1831,46 @@
 			#size-cells = <0>;
 			i2c-scl-hz = <1000000>;
 			i3c-scl-hz = <3000000>;
+			status = "disabled";
+		};
+
+		cmtw0: timer@11C01800 {
+			compatible = "renesas,rzv2h-cmtw";
+			reg = <0 0x11C01800 0 0x1000>;
+			interrupts = <GIC_SPI 455 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 456 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 457 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 458 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&cpg CPG_MOD R9A09G057_MCPU_CMTW0_CLKM>,
+				 <&cpg CPG_MOD R9A09G057_MCPU_CMTW1_CLKM>,
+				 <&cpg CPG_MOD R9A09G057_MCPU_CMTW2_CLKM>,
+				 <&cpg CPG_MOD R9A09G057_MCPU_CMTW3_CLKM>;
+			clock-names = "fck0", "fck1", "fck2", "fck3";
+			resets = <&cpg R9A09G057_MCPU_CMTW0_RST_M>,
+				 <&cpg R9A09G057_MCPU_CMTW1_RST_M>,
+				 <&cpg R9A09G057_MCPU_CMTW2_RST_M>,
+				 <&cpg R9A09G057_MCPU_CMTW3_RST_M>;
+			power-domains = <&cpg>;
+			status = "disabled";
+		};
+
+		cmtw1: timer@13000C00 {
+			compatible = "renesas,rzv2h-cmtw";
+			reg = <0 0x13000C00 0 0x1000>;
+			interrupts = <GIC_SPI 459 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 460 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 461 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 462 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&cpg CPG_MOD R9A09G057_RCPU_CMTW0_CLKM>,
+				 <&cpg CPG_MOD R9A09G057_RCPU_CMTW1_CLKM>,
+				 <&cpg CPG_MOD R9A09G057_RCPU_CMTW2_CLKM>,
+				 <&cpg CPG_MOD R9A09G057_RCPU_CMTW3_CLKM>;
+			clock-names = "fck0", "fck1", "fck2", "fck3";
+			resets = <&cpg R9A09G057_RCPU_CMTW0_RST_M>,
+				 <&cpg R9A09G057_RCPU_CMTW1_RST_M>,
+				 <&cpg R9A09G057_RCPU_CMTW2_RST_M>,
+				 <&cpg R9A09G057_RCPU_CMTW3_RST_M>;
+			power-domains = <&cpg>;
 			status = "disabled";
 		};
 
