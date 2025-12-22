@@ -92,7 +92,9 @@ static u32 r_device_serial_number_capability[] = {
 };
 #define REGULATOR_DISABLE_SLEEP_TIME_MS 25 /* Chosen to be 25 ms as this is a generous amount of time for a regulator to turn off*/
 #define POST_RESET_SLEEP_TIME_MS 1         /* 1ms sleep to give time for the Reset pin to assert */
-#define CLOCK_STABLE_SLEEP_TIME_MS 100     /* PCIE spec requires that the reset pulse width isat least 100ms */
+#define CLOCK_STABLE_SLEEP_TIME_MS 700     /* PCIE spec requires that the reset pulse width is at least 100ms
+											However IMDT have found some devices that need 700ms otherwise they won't come up 
+											*/
 
 static inline struct rzv2h_msi *to_rzv2h_msi(struct msi_controller *chip)
 {
