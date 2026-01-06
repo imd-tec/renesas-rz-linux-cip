@@ -639,6 +639,17 @@ config VIDEO_AP1302
 	  To compile this driver as a module, choose M here: the
 	  module will be called ap1302.
 
+config VIDEO_AR1335
+	tristate "ON Semiconductor AR1335 support"
+	depends on I2C && VIDEO_V4L2 && VIDEO_V4L2_SUBDEV_API
+	select V4L2_FWNODE
+	help
+	  This is a Video4Linux2 sensor-level driver for the ON Semiconductor
+	  AR1335.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called ar1335.
+
 endmenu
 
 menu "Audio/Video compression chips"
