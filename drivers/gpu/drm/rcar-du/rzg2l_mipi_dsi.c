@@ -43,10 +43,6 @@
 #define RZV2H_CPG_PLLDSI_CLK2		(0xC8)
 #define RZV2H_CPG_CSDIV1		(0x504)
 #define RZV2H_CPG_CSDIV1_DIVCTL2(x)	(((x) & GENMASK(11, 8)) >> 8)
-#define KDIV(val)			((s16)FIELD_GET(GENMASK(31, 16), (val)))
-#define MDIV(val)			FIELD_GET(GENMASK(15, 6), (val))
-#define PDIV(val)			FIELD_GET(GENMASK(5, 0), (val))
-#define SDIV(val)			FIELD_GET(GENMASK(2, 0), (val))
 #define RZV2H_MIPI_DPHY_OSC_CLK_IN_MEGA		(24)
 #define RZV2H_MIPI_DPHY_FVCO_MIN_IN_MEGA	(1050)
 #define RZV2H_MIPI_DPHY_FVCO_MAX_IN_MEGA	(2100)
@@ -521,9 +517,9 @@ static int rzg2l_mipi_dsi_dphy_init(struct rzg2l_mipi_dsi *mipi_dsi)
 		cpg_csdiv = 2 * (cpg_csdiv + 1);
 		clk1 = readl(cpg + RZV2H_CPG_PLLDSI_CLK1);
 		clk2 = readl(cpg + RZV2H_CPG_PLLDSI_CLK2);
-		rate = mul_u64_u32_shr(osc, (MDIV(clk1) << 16) + KDIV(clk1),
-				       16 + SDIV(clk2));
-		rate = DIV_ROUND_CLOSEST_ULL(rate, PDIV(clk1) * cpg_csdiv);
+		rate = mul_u64_u32_shr(osc, (CPG_PLLDSI_MDIV(clk1) << 16) + CPG_PLLDSI_KDIV(clk1),
+				       16 + CPG_PLLDSI_SDIV(clk2));
+		rate = DIV_ROUND_CLOSEST_ULL(rate, CPG_PLLDSI_PDIV(clk1) * cpg_csdiv);
 		hsfreq = DIV_ROUND_CLOSEST_ULL(rate * bpp * 8, 8 * mipi_dsi->lanes);
 		mipi_dsi->hsfreq = hsfreq / 1000;
 		iounmap(cpg);
