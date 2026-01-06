@@ -723,7 +723,7 @@ static int pcie_kthread(void *arg)
 				}
 			}
 		} else
-			msleep(1000);
+			msleep(20);
 	}
 	return 0;
 }

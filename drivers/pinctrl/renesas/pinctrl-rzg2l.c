@@ -1064,13 +1064,11 @@ static int rzg2l_pinctrl_pinconf_set(struct pinctrl_dev *pctldev,
 		}
 
 		case PIN_CONFIG_DRIVE_OPEN_DRAIN: {
-			unsigned int arg = pinconf_to_config_argument(_configs[i]);
-
 			if (!(cfg & PIN_CFG_NOD))
 				return -EINVAL;
 
 			rzg2l_rmw_pin_config(pctrl, NOD(port_offset),
-					     bit, NOD_MASK, !!arg);
+					     bit, NOD_MASK, 1);
 			break;
 		}
 
@@ -2529,6 +2527,7 @@ static struct rzg2l_pinctrl_data r9a09g056_data = {
 	.have_clrirq_reg = true,
 	.pwpr = PWPR_RZ_V2H,
 	.pinconf = rzv2h_pinconfigs,
+	.pinconf = rzg2l_pinconfigs,
 };
 
 static struct rzg2l_pinctrl_data r9a09g057_data = {
@@ -2545,6 +2544,7 @@ static struct rzg2l_pinctrl_data r9a09g057_data = {
 	.pwpr = PWPR_RZ_V2H,
 	.oen_reg_offset = 0x3C40,
 	.n_ports = ARRAY_SIZE(r9a09g057_gpio_configs),
+	.pinconf = rzv2h_pinconfigs,
 };
 
 static const struct of_device_id rzg2l_pinctrl_of_table[] = {

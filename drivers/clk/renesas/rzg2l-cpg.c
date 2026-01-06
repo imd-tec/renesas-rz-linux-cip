@@ -67,6 +67,16 @@
 #define CPG_PLL_MON_RESETB		BIT(0)
 
 
+/* For RZ/V2H PLL */
+#define RZV2H_CPG_SAMPLL_STBY(n)		(n)
+#define RZV2H_CPG_SAMPLL_STBY_RESETB_WEN	BIT(16)
+#define RZV2H_CPG_SAMPLL_STBY_RESETB		BIT(0)
+#define RZV2H_CPG_SAMPLL_CLK1(n)		((n) + 0x4)
+#define RZV2H_CPG_SAMPLL_CLK2(n)		((n) + 0x8)
+#define RZV2H_CPG_SAMPLL_MON(n)			((n) + 0x10)
+#define RZV2H_CPG_SAMPLL_MON_RESETB		BIT(0)
+#define RZV2H_CPG_SAMPLL_MON_LOCK		BIT(4)
+
 struct sd_hw_data {
 	struct clk_hw hw;
 	u32 conf;
@@ -534,6 +544,85 @@ rzg2l_cpg_pll_clk_register(const struct cpg_core_clk *core,
 	return clk_register(NULL, &pll_clk->hw);
 }
 
+static unsigned long rzv2h_cpg_pll_clk_recalc_rate(struct clk_hw *hw,
+						   unsigned long parent_rate)
+{
+	struct pll_clk *pll_clk = to_pll(hw);
+	struct rzg2l_cpg_priv *priv = pll_clk->priv;
+	unsigned int val1, val2;
+	unsigned int mult = 1;
+	unsigned int div = 1;
+
+	if (pll_clk->type != CLK_TYPE_RZV2H_SAM_PLL)
+		return parent_rate;
+
+	val1 = readl(priv->base + RZV2H_CPG_SAMPLL_CLK1(pll_clk->conf));
+	val2 = readl(priv->base + RZV2H_CPG_SAMPLL_CLK2(pll_clk->conf));
+	mult = MDIV(val1) + KDIV(val1) / 65536;
+	div = PDIV(val1) << SDIV(val2);
+
+	return DIV_ROUND_CLOSEST_ULL((u64)parent_rate * mult, div);
+}
+
+static const struct clk_ops rzv2h_cpg_pll_ops = {
+	.recalc_rate = rzv2h_cpg_pll_clk_recalc_rate,
+};
+
+static struct clk * __init
+rzv2h_cpg_pll_clk_register(const struct cpg_core_clk *core,
+			   struct clk **clks,
+			   void __iomem *base,
+			   struct rzg2l_cpg_priv *priv)
+{
+	struct device *dev = priv->dev;
+	const struct clk *parent;
+	struct clk_init_data init;
+	const char *parent_name;
+	struct pll_clk *pll_clk;
+	u32 reg;
+	u32 status = (RZV2H_CPG_SAMPLL_MON_LOCK | RZV2H_CPG_SAMPLL_MON_RESETB);
+	int ret;
+
+	parent = clks[core->parent & 0xffff];
+	if (IS_ERR(parent))
+		return ERR_CAST(parent);
+
+	pll_clk = devm_kzalloc(dev, sizeof(*pll_clk), GFP_KERNEL);
+	if (!pll_clk)
+		return ERR_PTR(-ENOMEM);
+
+	parent_name = __clk_get_name(parent);
+	init.name = core->name;
+	init.ops = &rzv2h_cpg_pll_ops;
+	init.flags = 0;
+	init.parent_names = &parent_name;
+	init.num_parents = 1;
+
+	pll_clk->hw.init = &init;
+	pll_clk->conf = core->conf;
+	pll_clk->base = base;
+	pll_clk->priv = priv;
+	pll_clk->type = core->type;
+
+	/* Enable PLL clock if it is in resset state when registering */
+	reg = readl(base + RZV2H_CPG_SAMPLL_STBY(core->conf));
+	if (!(reg & RZV2H_CPG_SAMPLL_STBY_RESETB)) {
+		writel(reg | RZV2H_CPG_SAMPLL_STBY_RESETB |
+		       RZV2H_CPG_SAMPLL_STBY_RESETB_WEN,
+		       base + RZV2H_CPG_SAMPLL_STBY(core->conf));
+
+		ret = readl_poll_timeout(base + RZV2H_CPG_SAMPLL_MON(core->conf),
+					 reg, reg == status, 100,
+					 1000);
+		if (ret) {
+			dev_err(priv->dev, "failed to enable/lock PLL\n");
+			return ERR_PTR(ret);
+		}
+	}
+
+	return clk_register(NULL, &pll_clk->hw);
+}
+
 static struct clk
 *rzg2l_cpg_clk_src_twocell_get(struct of_phandle_args *clkspec,
 			       void *data)
@@ -616,6 +705,10 @@ rzg2l_cpg_register_core_clk(const struct cpg_core_clk *core,
 		break;
 	case CLK_TYPE_SAM_PLL:
 		clk = rzg2l_cpg_pll_clk_register(core, priv->clks,
+						 priv->base, priv);
+		break;
+	case CLK_TYPE_RZV2H_SAM_PLL:
+		clk = rzv2h_cpg_pll_clk_register(core, priv->clks,
 						 priv->base, priv);
 		break;
 	case CLK_TYPE_DIV:

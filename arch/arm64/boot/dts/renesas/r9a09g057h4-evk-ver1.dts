@@ -47,9 +47,16 @@
  *
  * SEL_CAN01_HEADER:
  *	1: CAN0/1	0: External Header Pin
+ * SEL_SCI4_HEADER:
+ *	1: SCI4		0: CAN0/1
  */
 
 #define SEL_CAN01_HEADER	1
+#define SEL_SCI4_CAN01		0
+
+#if (!SEL_CAN01_HEADER && SEL_SCI4_CAN01)
+#error "Cannot set 1 to SEL_SCI4_CAN01 as SEL_CAN01_HEADER=0"
+#endif
 
 / {
 	model = "Renesas EVK ver1 based on r9a09g057h4";
@@ -57,8 +64,9 @@
 
 	aliases {
 		serial0 = &scif0;
-		serial1 = &sci4;
-		serial2 = &sci5;
+		serial1 = &sci0;
+		serial2 = &sci4;
+		serial3 = &sci5;
 		mmc0 = &sdhi0;
 		mmc1 = &sdhi1;
 		mmc2 = &sdhi2;
@@ -91,19 +99,29 @@
 			compatible = "shared-dma-pool";
 			linux,cma-default;
 			reusable;
-			reg = <0x0 0x58000000 0x0 0x10000000>;
+			reg = <0x0 0x58000000 0x0 0x28000000>;
 		};
 
 		mmp_reserved: linux,multimedia {
 			compatible = "shared-dma-pool";
 			reusable;
-			reg = <0x00000000 0x68000000 0x0 0x20000000>;
+			reg = <0x00000000 0x80000000 0x0 0x10000000>;
 		};
 
-		isp: ISP@90000000 {
+		isp_reserved: frame_buffer@90000000 {
 			compatible = "shared-dma-pool";
 			reusable;
 			reg = <0x0 0x90000000 0x0 0x18000000>;
+		};
+
+		opencva_reserved: OpenCVA@A8000000 {
+			reusable;
+			reg = <0x0 0xA8000000 0x0 0x7D00000>;
+		};
+
+		drp_codec: DRP-Codec@AFD00000 {
+			reusable;
+			reg = <0x0 0xAFD00000 0x0 0x300000>;
 		};
 
 		image_buf0: image_buf@B0000000 {
@@ -113,14 +131,10 @@
 			label = "image_buf0";
 		};
 
-		opencva_reserved: OpenCVA@C0000000 {
+		cru_func: cru_buffer@B4000000 {
+			compatible = "shared-dma-pool";
 			reusable;
-			reg = <0x0 0xC0000000 0x0 0x7D00000>;
-		};
-
-		drp_codec: DRP-Codec@C7D00000 {
-			reusable;
-			reg = <0x0 0xC7D00000 0x0 0x300000>;
+			reg = <0x0 0xB4000000 0x0 0x16400000>;
 		};
 
 		drp_reserved: DRP-AI@240000000 {
@@ -162,6 +176,17 @@
 		regulator-always-on;
 	};
 
+	vmmc_sdhi0: regulator-vcc-sdhi0 {
+		compatible = "regulator-fixed";
+
+		regulator-name = "SDHI0 Vmmc";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+
+		gpios = <&pinctrl RZG2L_GPIO(10, 1) GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
 	vccq_sdhi0: regulator-vccq-sdhi0 {
 		compatible = "regulator-gpio";
 
@@ -173,6 +198,17 @@
 
 		gpios-states = <0>;
 		states = <3300000 0 1800000 1>;
+	};
+
+	vmmc_sdhi1: regulator-vcc-sdhi1 {
+		compatible = "regulator-fixed";
+
+		regulator-name = "SDHI1 Vmmc";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+
+		gpios = <&pinctrl RZG2L_GPIO(10, 3) GPIO_ACTIVE_HIGH>;
+		enable-active-high;
 	};
 
 	vccq_sdhi1: regulator-vccq-sdhi1 {
@@ -316,7 +352,7 @@
 // };
 
 &pinctrl {
-#if (SEL_CAN01_HEADER)
+#if (SEL_CAN01_HEADER && !SEL_SCI4_CAN01)
 	can0_pins: can0 {
 		pinmux = <RZG2L_PORT_PINMUX(8, 0, 5)>, /* TX */
 			 <RZG2L_PORT_PINMUX(8, 1, 5)>; /* RX */
@@ -332,28 +368,25 @@
 		pins =  "SCIF_RXD", "SCIF_TXD";
 	};
 
+	sci0_pins: sci0 {
+		pinmux = <RZG2L_PORT_PINMUX(5, 0, 1)>, /* SCI0_TXD_MOSI_SDA */
+			 <RZG2L_PORT_PINMUX(5, 1, 1)>, /* SCI0_RXD_MISO_SCL */
+			 <RZG2L_PORT_PINMUX(5, 2, 4)>, /* SCI0_CTS */
+			 <RZG2L_PORT_PINMUX(5, 3, 2)>; /* SCI0_RTS */
+	};
+
+#if (SEL_CAN01_HEADER && SEL_SCI4_CAN01)
 	sci4_pins: sci4 {
 		pinmux = <RZG2L_PORT_PINMUX(8, 4, 6)>, /* SCI4_TXD_MOSI_SDA */
-			 <RZG2L_PORT_PINMUX(8, 5, 6)>; /* SCI4_RXD_MISO_SCL */
+			 <RZG2L_PORT_PINMUX(8, 5, 6)>, /* SCI4_RXD_MISO_SCL */
+			 <RZG2L_PORT_PINMUX(8, 0, 3)>, /* SCI4_CTS */
+			 <RZG2L_PORT_PINMUX(8, 1, 1)>; /* SCI4_RTS */
 	};
+#endif
 
 	sci5_pins: sci5 {
 		pinmux = <RZG2L_PORT_PINMUX(8, 6, 6)>, /* SCI5_TXD_MOSI_SDA */
 			 <RZG2L_PORT_PINMUX(8, 7, 6)>; /* SCI5_RXD_MISO_SCL */
-	};
-
-	sd0_pwr_en {
-		gpio-hog;
-		gpios = <RZG2L_GPIO(10, 1) GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "sd0_pwr_en";
-	};
-
-	sd1_pwr_en {
-		gpio-hog;
-		gpios = <RZG2L_GPIO(10, 3) GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "sd1_pwr_en";
 	};
 
 	/* cam0_pwr_en is used by Google Coral Camera from CSI20 and CSI21 */
@@ -483,11 +516,23 @@
 	status = "okay";
 };
 
+&sci0 {
+	pinctrl-0 = <&sci0_pins>;
+	pinctrl-names = "default";
+
+	uart-has-rtscts;
+	status = "okay";
+};
+
+#if (SEL_CAN01_HEADER && SEL_SCI4_CAN01)
 &sci4 {
 	pinctrl-0 = <&sci4_pins>;
 	pinctrl-names = "default";
+
+	uart-has-rtscts;
 	status = "okay";
 };
+#endif
 
 &sci5 {
 	pinctrl-0 = <&sci5_pins>;
@@ -498,7 +543,7 @@
 &sdhi0 {
 	pinctrl-0 = <&sdhi0_pins>;
 	pinctrl-names = "default";
-	vmmc-supply = <&reg_3p3v>;
+	vmmc-supply = <&vmmc_sdhi0>;
 	vqmmc-supply = <&vccq_sdhi0>;
 	bus-width = <4>;
 	sd-uhs-sdr50;
@@ -509,7 +554,7 @@
 &sdhi1 {
 	pinctrl-0 = <&sdhi1_pins>;
 	pinctrl-names = "default";
-	vmmc-supply = <&reg_3p3v>;
+	vmmc-supply = <&vmmc_sdhi1>;
 	vqmmc-supply = <&vccq_sdhi1>;
 	bus-width = <4>;
 	sd-uhs-sdr50;
@@ -946,7 +991,7 @@
 		status = "okay";
 };
 
-#if (SEL_CAN01_HEADER)
+#if (SEL_CAN01_HEADER && !SEL_SCI4_CAN01)
 &canfd {
 	pinctrl-0 = <&can0_pins &can1_pins>;
 	pinctrl-names = "default";
@@ -1068,5 +1113,13 @@
 };
 
 &adc {
+	status = "okay";
+};
+
+&cmtw0 {
+	status = "okay";
+};
+
+&cmtw1 {
 	status = "okay";
 };

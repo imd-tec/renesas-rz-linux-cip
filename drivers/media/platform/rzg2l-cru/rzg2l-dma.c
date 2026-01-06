@@ -1048,10 +1048,10 @@ static void rzg2l_cru_stop_streaming(struct vb2_queue *vq)
 	if (cru->retry_thread)
 		kthread_stop(cru->retry_thread);
 
+	rzg2l_cru_set_stream(cru, 0);
+
 	/* Stop the operation of image conversion */
 	rzg2l_cru_write(cru, ICnEN, 0);
-
-	rzg2l_cru_set_stream(cru, 0);
 
 	rzg2l_cru_stop(cru);
 
