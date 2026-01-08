@@ -54,7 +54,7 @@
 		port {
 			ar1335_to_csi22: endpoint {
 				clock-lanes = <0>;
-				data-lanes = <1 2 3 4>;
+				data-lanes = <1 2>;
 				remote-endpoint = <&csi22_in>;
 			};
 		};
@@ -66,7 +66,7 @@
 		port {
 			csi22_in: endpoint {
 				clock-lanes = <0>;
-				data-lanes = <1 2 3 4>;
+				data-lanes = <1 2>;
 				remote-endpoint = <&ar1335_to_csi22>;
 			};
 		};
