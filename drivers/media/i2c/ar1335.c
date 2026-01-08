@@ -140,319 +140,37 @@ struct set_bit_entry {
 	u16 val;
 };
 
-static const struct initial_reg initial_regs[] = {
-	#if 0 
-	REGS(be(0x301A),be(0x0210)),               
-	REGS(be(0x3EB6),be(0x004D)), 
-	REGS(be(0x3EBC),be(0xAA06)),
-	REGS(be(0x3EC0),be(0x1E02)),
-	REGS(be(0x3EC2),be(0x7700)),
-	REGS(be(0x3EC4),be(0x1C08)),
-	REGS(be(0x3EC6),be(0xEA44)),
-	REGS(be(0x3EC8),be(0x0F0F)),
-	REGS(be(0x3ECA),be(0x0F4A)),
-	REGS(be(0x3ECC),be(0x0706)),
-	REGS(be(0x3ECE),be(0x443B)),
-	REGS(be(0x3ED0),be(0x12F0)),
-	REGS(be(0x3ED2),be(0x0039)),
-	REGS(be(0x3ED4),be(0x862F)),
-	REGS(be(0x3ED6),be(0x4080)),
-	REGS(be(0x3ED8),be(0x0523)),
-	REGS(be(0x3EDA),be(0xF896)),
-	REGS(be(0x3EDC),be(0x508C)),
-	REGS(be(0x3EDE),be(0x5005)),
-	REGS(be(0x316A),be(0x8200)),
-	REGS(be(0x316E),be(0x8200)),
-	REGS(be(0x316C),be(0x8200)),
-	REGS(be(0x3EF0),be(0x414D)),
-	REGS(be(0x3EF2),be(0x0101)),
-	REGS(be(0x3EF6),be(0x0307)),
-	REGS(be(0x3EFA),be(0x0F0F)),
-	REGS(be(0x3EFC),be(0x0F0F)),
-	REGS(be(0x3EFE),be(0x0F0F)),
-	REGS(be(0x3172),be(0x0206)), /* txlo clk divider options */
-	REGS(be(0x3040),be(0x4041)),
-	REGS(be(0x317A),be(0x416E)),
-	REGS(be(0x3F3C),be(0x0003)),
-	REGS(be(0x0400),be(0x0000)),
-	REGS(be(0x0404),be(0x0010)),
-	REGS(be(0x31B0),be(0x0086)),  /* 31B0: frame_preamble - FIXME check WRT lanes# */
-	REGS(be(0x31B2),be(0x0057)), /* 31B2: line_preamble - FIXME check WRT lanes# */
-	REGS(be(0x31B4),be(0x2412)),
-	REGS(be(0x31B6),be(0x142A)),
-	REGS(be(0x31B8),be(0x2413)),
-	REGS(be(0x31BA),be(0x1C70)),
-	REGS(be(0x31BC),be(0x068B)),
-	/* don't use continuous clock mode while shut down */
-	//REGS(be(0x31BC), be(0x068B)),
-	REGS(be(0x0112),be(0x0A0A)), /* 10-bit/10-bit mode */
-	REGS(be(0x3D00),be(0x0446)),
-	REGS(be(0x3D02),be(0x4C66)),
-	REGS(be(0x3D04),be(0xFFFF)),
-	REGS(be(0x3D06),be(0xFFFF)),
-	REGS(be(0x3D08),be(0x5E40)),
-	REGS(be(0x3D0A),be(0x1146)),
-	REGS(be(0x3D0C),be(0x5D41)),
-	REGS(be(0x3D0E),be(0x1088)),
-	REGS(be(0x3D10),be(0x8342)),
-	REGS(be(0x3D12),be(0x00C0)),
-	REGS(be(0x3D14),be(0x5580)),
-	REGS(be(0x3D16),be(0x5B83)),
-	REGS(be(0x3D18),be(0x6084)),
-	REGS(be(0x3D1A),be(0x5A8D)),
-	REGS(be(0x3D1C),be(0x00C0)),
-	REGS(be(0x3D1E),be(0x8342)),
-	REGS(be(0x3D20),be(0x925A)),
-	REGS(be(0x3D22),be(0x8664)),
-	REGS(be(0x3D24),be(0x1030)),
-	REGS(be(0x3D26),be(0x801C)),
-	REGS(be(0x3D28),be(0x00A0)),
-	REGS(be(0x3D2A),be(0x56B0)),
-	REGS(be(0x3D2C),be(0x5788)),
-	REGS(be(0x3D2E),be(0x5150)),
-	REGS(be(0x3D30),be(0x824D)),
-	REGS(be(0x3D32),be(0x8D58)),
-	REGS(be(0x3D34),be(0x58D2)),
-	REGS(be(0x3D36),be(0x438A)),
-	REGS(be(0x3D38),be(0x4592)),
-	REGS(be(0x3D3A),be(0x458A)),
-	REGS(be(0x3D3C),be(0x4389)),
-	REGS(be(0x3D3E),be(0x51FF)),
-	REGS(be(0x3D40),be(0x8451)),
-	REGS(be(0x3D42),be(0x8410)),
-	REGS(be(0x3D44),be(0x0C88)),
-	REGS(be(0x3D46),be(0x5959)),
-	REGS(be(0x3D48),be(0x8A5F)),
-	REGS(be(0x3D4A),be(0xDA42)),
-	REGS(be(0x3D4C),be(0x9361)),
-	REGS(be(0x3D4E),be(0X8262)),
-	REGS(be(0x3D50),be(0x8342)),
-	REGS(be(0x3D52),be(0x8010)),
-	REGS(be(0x3D54),be(0xC041)),
-	REGS(be(0x3D56),be(0x64FF)),
-	REGS(be(0x3D58),be(0xFFB7)),
-	REGS(be(0x3D5A),be(0x4081)),
-	REGS(be(0x3D5C),be(0x4080)),
-	REGS(be(0x3D5E),be(0x4180)),
-	REGS(be(0x3D60),be(0x4280)),
-	REGS(be(0x3D62),be(0x438D)),
-	REGS(be(0x3D64),be(0x44BA)),
-	REGS(be(0x3D66),be(0x4488)),
-	REGS(be(0x3D68),be(0x4380)),
-	REGS(be(0x3D6A),be(0x4241)),
-	REGS(be(0x3D6C),be(0x8140)),
-	REGS(be(0x3D6E),be(0x8240)),
-	REGS(be(0x3D70),be(0x8041)),
-	REGS(be(0x3D72),be(0x8042)),
-	REGS(be(0x3D74),be(0x8043)),
-	REGS(be(0x3D76),be(0x8D44)),
-	REGS(be(0x3D78),be(0xBA44)),
-	REGS(be(0x3D7A),be(0x875E)),
-	REGS(be(0x3D7C),be(0x4354)),
-	REGS(be(0x3D7E),be(0x4241)),
-	REGS(be(0x3D80),be(0x8140)),
-	REGS(be(0x3D82),be(0x8120)),
-	REGS(be(0x3D84),be(0x2881)),
-	REGS(be(0x3D86),be(0x6026)),
-	REGS(be(0x3D88),be(0x8055)),
-	REGS(be(0x3D8A),be(0x8070)),
-	REGS(be(0x3D8C),be(0x8040)),
-	REGS(be(0x3D8E),be(0x4C81)),
-	REGS(be(0x3D90),be(0x45C3)),
-	REGS(be(0x3D92),be(0x4581)),
-	REGS(be(0x3D94),be(0x4C40)),
-	REGS(be(0x3D96),be(0x8070)),
-	REGS(be(0x3D98),be(0x8040)),
-	REGS(be(0x3D9A),be(0x4C85)),
-	REGS(be(0x3D9C),be(0x6CA8)),
-	REGS(be(0x3D9E),be(0x6C8C)),
-	REGS(be(0x3DA0),be(0x000E)),
-	REGS(be(0x3DA2),be(0xBE44)),
-	REGS(be(0x3DA4),be(0x8844)),
-	REGS(be(0x3DA6),be(0xBC78)),
-	REGS(be(0x3DA8),be(0x0900)),
-	REGS(be(0x3DAA),be(0x8904)),
-	REGS(be(0x3DAC),be(0x8080)),
-	REGS(be(0x3DAE),be(0x0240)),
-	REGS(be(0x3DB0),be(0x8609)),
-	REGS(be(0x3DB2),be(0x008E)),
-	REGS(be(0x3DB4),be(0x0900)),
-	REGS(be(0x3DB6),be(0x8002)),
-	REGS(be(0x3DB8),be(0x4080)),
-	REGS(be(0x3DBA),be(0x0480)),
-	REGS(be(0x3DBC),be(0x887C)),
-	REGS(be(0x3DBE),be(0xAA86)),
-	REGS(be(0x3DC0),be(0x0900)),
-	REGS(be(0x3DC2),be(0x877A)),
-	REGS(be(0x3DC4),be(0x000E)),
-	REGS(be(0x3DC6),be(0xC379)),
-	REGS(be(0x3DC8),be(0x4C40)),
-	REGS(be(0x3DCA),be(0xBF70)),
-	REGS(be(0x3DCC),be(0x5E40)),
-	REGS(be(0x3DCE),be(0x114E)),
-	REGS(be(0x3DD0),be(0x5D41)),
-	REGS(be(0x3DD2),be(0x5383)),
-	REGS(be(0x3DD4),be(0x4200)),
-	REGS(be(0x3DD6),be(0xC055)),
-	REGS(be(0x3DD8),be(0xA400)),
-	REGS(be(0x3DDA),be(0xC083)),
-	REGS(be(0x3DDC),be(0x4288)),
-	REGS(be(0x3DDE),be(0x6083)),
-	REGS(be(0x3DE0),be(0x5B80)),
-	REGS(be(0x3DE2),be(0x5A64)),
-	REGS(be(0x3DE4),be(0x1030)),
-	REGS(be(0x3DE6),be(0x801C)),
-	REGS(be(0x3DE8),be(0x00A5)),
-	REGS(be(0x3DEA),be(0x5697)),
-	REGS(be(0x3DEC),be(0x57A5)),
-	REGS(be(0x3DEE),be(0x5180)),
-	REGS(be(0x3DF0),be(0x505A)),
-	REGS(be(0x3DF2),be(0x814D)),
-	REGS(be(0x3DF4),be(0x8358)),
-	REGS(be(0x3DF6),be(0x8058)),
-	REGS(be(0x3DF8),be(0xA943)),
-	REGS(be(0x3DFA),be(0x8345)),
-	REGS(be(0x3DFC),be(0xB045)),
-	REGS(be(0x3DFE),be(0x8343)),
-	REGS(be(0x3E00),be(0xA351)),
-	REGS(be(0x3E02),be(0xE251)),
-	REGS(be(0x3E04),be(0x8C59)),
-	REGS(be(0x3E06),be(0x8059)),
-	REGS(be(0x3E08),be(0x8A5F)),
-	REGS(be(0x3E0A),be(0xEC7C)),
-	REGS(be(0x3E0C),be(0xCC84)),
-	REGS(be(0x3E0E),be(0x6182)),
-	REGS(be(0x3E10),be(0x6283)),
-	REGS(be(0x3E12),be(0x4283)),
-	REGS(be(0x3E14),be(0x10CC)),
-	REGS(be(0x3E16),be(0x6496)),
-	REGS(be(0x3E18),be(0x4281)),
-	REGS(be(0x3E1A),be(0x41BB)),
-	REGS(be(0x3E1C),be(0x4082)),
-	REGS(be(0x3E1E),be(0x407E)),
-	REGS(be(0x3E20),be(0xCC41)),
-	REGS(be(0x3E22),be(0x8042)),
-	REGS(be(0x3E24),be(0x8043)),
-	REGS(be(0x3E26),be(0x8300)),
-	REGS(be(0x3E28),be(0xC088)),
-	REGS(be(0x3E2A),be(0x44BA)),
-	REGS(be(0x3E2C),be(0x4488)),
-	REGS(be(0x3E2E),be(0x00C8)),
-	REGS(be(0x3E30),be(0x8042)),
-	REGS(be(0x3E32),be(0x4181)),
-	REGS(be(0x3E34),be(0x4082)),
-	REGS(be(0x3E36),be(0x4080)),
-	REGS(be(0x3E38),be(0x4180)),
-	REGS(be(0x3E3A),be(0x4280)),
-	REGS(be(0x3E3C),be(0x4383)),
-	REGS(be(0x3E3E),be(0x00C0)),
-	REGS(be(0x3E40),be(0x8844)),
-	REGS(be(0x3E42),be(0xBA44)),
-	REGS(be(0x3E44),be(0x8800)),
-	REGS(be(0x3E46),be(0xC880)),
-	REGS(be(0x3E48),be(0x4241)),
-	REGS(be(0x3E4A),be(0x8240)),
-	REGS(be(0x3E4C),be(0x8140)),
-	REGS(be(0x3E4E),be(0x8041)),
-	REGS(be(0x3E50),be(0x8042)),
-	REGS(be(0x3E52),be(0x8043)),
-	REGS(be(0x3E54),be(0x8300)),
-	REGS(be(0x3E56),be(0xC088)),
-	REGS(be(0x3E58),be(0x44BA)),
-	REGS(be(0x3E5A),be(0x4488)),
-	REGS(be(0x3E5C),be(0x00C8)),
-	REGS(be(0x3E5E),be(0x8042)),
-	REGS(be(0x3E60),be(0x4181)),
-	REGS(be(0x3E62),be(0x4082)),
-	REGS(be(0x3E64),be(0x4080)),
-	REGS(be(0x3E66),be(0x4180)),
-	REGS(be(0x3E68),be(0x4280)),
-	REGS(be(0x3E6A),be(0x4383)),
-	REGS(be(0x3E6C),be(0x00C0)),
-	REGS(be(0x3E6E),be(0x8844)),
-	REGS(be(0x3E70),be(0xBA44)),
-	REGS(be(0x3E72),be(0x8800)),
-	REGS(be(0x3E74),be(0xC880)),
-	REGS(be(0x3E76),be(0x4241)),
-	REGS(be(0x3E78),be(0x8140)),
-	REGS(be(0x3E7A),be(0x9F5E)),
-	REGS(be(0x3E7C),be(0x8A54)),
-	REGS(be(0x3E7E),be(0x8620)),
-	REGS(be(0x3E80),be(0x2881)),
-	REGS(be(0x3E82),be(0x6026)),
-	REGS(be(0x3E84),be(0x8055)),
-	REGS(be(0x3E86),be(0x8070)),
-	REGS(be(0x3E88),be(0x0000)),
-	REGS(be(0x3E8A),be(0x0000)),
-	REGS(be(0x3E8C),be(0x0000)),
-	REGS(be(0x3E8E),be(0x0000)),
-	REGS(be(0x3E90),be(0x0000)),
-	REGS(be(0x3E92),be(0x0000)),
-	REGS(be(0x3E94),be(0x0000)),
-	REGS(be(0x3E96),be(0x0000)),
-	REGS(be(0x3E98),be(0x0000)),
-	REGS(be(0x3E9A),be(0x0000)),
-	REGS(be(0x3E9C),be(0x0000)),
-	REGS(be(0x3E9E),be(0x0000)),
-	REGS(be(0x3EA0),be(0x0000)),
-	REGS(be(0x3EA2),be(0x0000)),
-	REGS(be(0x3EA4),be(0x0000)),
-	REGS(be(0x3EA6),be(0x0000)),
-	REGS(be(0x3EA8),be(0x0000)),
-	REGS(be(0x3EAA),be(0x0000)),
-	REGS(be(0x3EAC),be(0x0000)),
-	REGS(be(0x3EAE),be(0x0000)),
-	REGS(be(0x3EB0),be(0x0000)),
-	REGS(be(0x3EB2),be(0x0000)),
-	REGS(be(0x3EB4),be(0x0000))
-	#endif
+static const struct initial_reg initial_regs[] = { // 1080P @30fps
+    REGS(be(0x0300), be(0x0005)), // VT_PIX_CLK_DIV
+    REGS(be(0x0302), be(0x0001)), // VT_SYS_CLK_DIV
+    REGS(be(0x0304), be(0x0101)), // PRE_PLL_CLK_DIV
+    REGS(be(0x0306), be(0x2E2E)), // PLL_MULTIPLIER
+    REGS(be(0x0308), be(0x000A)), // OP_PIX_CLK_DIV
+    REGS(be(0x030A), be(0x0001)), // OP_SYS_CLK_DIV
+    REGS(be(0x0344), be(0x00C8)), // X_ADDR_START
+    REGS(be(0x0348), be(0x0FC7)), // X_ADDR_END
+    REGS(be(0x0346), be(0x01F0)), // Y_ADDR_START
+    REGS(be(0x034A), be(0x0A5F)), // Y_ADDR_END
+    REGS(be(0x034C), be(0x0780)), // X_OUTPUT_SIZE
+    REGS(be(0x034E), be(0x0438)), // Y_OUTPUT_SIZE
+    REGS(be(0x3040), be(0x0043)), // X_BIN, X_ODD_INC, Y_ODD_INC
+    REGS(be(0x3172), be(0x0206)), // DIGBIN_ENABLE
+    REGS(be(0x317A), be(0x516E)), // SF_BIN_ENABLE
+    REGS(be(0x3F3C), be(0x0003)), // SF_BIN_ENABLE
+    REGS(be(0x0400), be(0x0001)), // Scaling Enabling
+    REGS(be(0x0404), be(0x0020)), // Scale_M
+    REGS(be(0x0342), be(0x1200)), // LINE_LENGTH_PCK
+    REGS(be(0x0340), be(0x0C7A)), // FRAME_LENGTH_LINES
+    REGS(be(0x0202), be(0x0C5A)), // COARSE_INTEGRATION_TIME
+    REGS(be(0x31B0), be(0x005C)), // Frame Preamble
+    REGS(be(0x31B2), be(0x002D)), // Line Preamble
+    REGS(be(0x31B4), be(0x2412)), // MIPI Timing 0
+    REGS(be(0x31B6), be(0x142A)), // MIPI Timing 1
+    REGS(be(0x31B8), be(0x2413)), // MIPI Timing 2
+    REGS(be(0x31BA), be(0x1C70)), // MIPI Timing 3
+    REGS(be(0x31BC), be(0x868B)), // MIPI Timing 4
+    REGS(be(0x0112), be(0x0A0A)), // CCP_DATA_FORMAT
 };
-
-static const struct initial_reg initial_regs2[] = {
-	REGS(be(0x0300),be(0x0005)),  // VT_PIX_CLK_DIV = 5
-	REGS(be(0x0302),be(0x0001)),  // VT_SYS_CLK_DIV = 1
-	REGS(be(0x0304),be(0x003F),be(0x0001)),
-	REGS(be(0x0306),be(0x00FF),be(0x002E)),
-	REGS(be(0x0304),be(0x3F00),be(0x0001)),
-	REGS(be(0x0306),be(0xFF00),be(0x002E)),
-	REGS(be(0x0308),be(0x000A)),  // OP_PIX_CLK_DIV = 10
-	REGS(be(0x030A),be(0x0001)),  // OP_SYS_CLK_DIV = 1
-	REGS(be(0x3016),be(0x0411)),  // ROW_SPEED = 4 LANES
-	REGS(be(0x31AE),be(0x000F),be(0x0004)),
-	REGS(be(0x0112),be(0x0A0A)),  // CCP_DATA_FORMAT = 2570
-	REGS(be(0x31B0),be(0x005C)),  // FRAME_PREAMBLE = 92
-	REGS(be(0x31B2),be(0x002D)),  // LINE_PREAMBLE = 45
-	REGS(be(0x31B4),be(0x4392)),  // MIPI_TIMING_0 = 17298
-	REGS(be(0x31B6),be(0x43CA)),  // MIPI_TIMING_1 = 17354
-	REGS(be(0x31B8),be(0x2413)),  // MIPI_TIMING_2 = 9235
-	REGS(be(0x31BA),be(0x1C70)),  // MIPI_TIMING_3 = 7280
-	REGS(be(0x31BC),be(0x868B)),  // MIPI_TIMING_4 = 34443
-	REGS(be(0x0202),be(0x05E8)),  // COARSE_INTEGRATION_TIME = 1512
-	REGS(be(0x0340),be(0xA626)),  // FRAME_LENGTH_LINE = 1574
-	REGS(be(0x0342),be(0x1240)),  // LINE_LENGTH_PCK = 4672
-	REGS(be(0x0344),be(0x00C8)),  // X_ADDR_START = 200
-	REGS(be(0x0346),be(0x01F0)),  // Y_ADDR_START = 496
-	REGS(be(0x0348),be(0x0FC7)),  // X_ADDR_END = 4039
-	REGS(be(0x034A),be(0x0A5D)),  // Y_ADDR_END = 2653
-	REGS(be(0x3040),be(0x0043)),  // READ_MODE = 67
-	REGS(be(0x3172),be(0x0020),be(0x0000)),
-	REGS(be(0x317A),be(0x1000),be(0x0001)),
-	REGS(be(0x3F3C),be(0x0008),be(0x0000)),
-	REGS(be(0x0400),be(0x0001)),  // SCALING_MODE = 1
-	REGS(be(0x034C),be(0x0780)),  // X_OUTPUT_SIZE = 1920
-	REGS(be(0x034E),be(0x0438)),  // Y_OUTPUT_SIZE = 1080
-	REGS(be(0x0404),be(0x0020)),  // SCALE_M = 32
-};
-
-
-// BITFIELD = 0x0304, 0x003F, 0x0001	//PRE_PLL_CLK_DIV, bits 0x003F = 1
-// BITFIELD = 0x0306, 0x00FF, 0x002E	//PLL_MULTIPLIER, bits 0x00FF = 46
-// BITFIELD = 0x0304, 0x3F00, 0x0001	//PRE_PLL_CLK_DIV2, bits 0x3F00 = 1
-// BITFIELD = 0x0306, 0xFF00, 0x002E	//PLL_MULTIPLIER2, bits 0xFF00 = 46
-// BITFIELD = 0x3172, 0x0020, 0x0000	//ANALOG_CONTROL2, 0x0020 = 0
-// BITFIELD = 0x317A, 0x1000, 0x0001	//ANALOG_CONTROL6, 0x1000 = 1
-// BITFIELD = 0x3F3C, 0x0008, 0x0000	//ANALOG_CONTROL9, 0x0008 = 0
-// BITFIELD = 0x31AE, 0x000F, 0x0004	//SERIAL_FORMAT, bits 0x000F = 4
 
 static int modify_i2c_register(struct i2c_client *client, u16 reg, u16 mask, u16 value);
 
@@ -563,7 +281,7 @@ static int ar1335_write_regs(struct ar1335_dev *sensor, const __be16 *data,
 }
 
 /* Data must be BE16, the first value is the register address */
-static int ar1335_write_regs2(struct ar1335_dev *sensor, const __be16 *data,
+static int ar1335_read_write_modify(struct ar1335_dev *sensor, const __be16 *data,
 	unsigned int count)
 {
 	struct i2c_client *client = sensor->i2c_client;
@@ -653,23 +371,25 @@ static int ar1335_write_reg(struct ar1335_dev *sensor, u16 reg, u16 val)
 
 static int ar1335_set_geometry(struct ar1335_dev *sensor)
 {
-	/* Center the image in the visible output window. */
-	u16 x = clamp((AR1335_WIDTH_MAX - sensor->fmt.width) / 2,
-		       AR1335_MIN_X_ADDR_START, AR1335_MAX_X_ADDR_END);
-	u16 y = clamp(((AR1335_HEIGHT_MAX - sensor->fmt.height) / 2) & ~1,
-		       AR1335_MIN_Y_ADDR_START, AR1335_MAX_Y_ADDR_END);
+	/* Always use the full native sensor area for readout, output 1920x1080 for scaling */
+	u16 x_start = AR1335_MIN_X_ADDR_START;
+	u16 y_start = AR1335_MIN_Y_ADDR_START;
+	u16 x_end = AR1335_MAX_X_ADDR_END;
+	u16 y_end = AR1335_MAX_Y_ADDR_END;
+	u16 out_width = 1920;
+	u16 out_height = 1080;
 
-	/* All dimensions are unsigned 12-bit integers */
+	       /* All dimensions are unsigned 12-bit integers */
 	__be16 regs[] = {
 		be(AR1335_REG_FRAME_LENGTH_LINES),
-		be(sensor->fmt.height + sensor->ctrls.vblank->val),
-		be(sensor->fmt.width + sensor->ctrls.hblank->val),
-		be(x),
-		be(y),
-		be(x + sensor->fmt.width - 1),
-		be(y + sensor->fmt.height - 1),
-		be(sensor->fmt.width),
-		be(sensor->fmt.height)
+		be(out_height + sensor->ctrls.vblank->val),
+		be(out_width + sensor->ctrls.hblank->val),
+		be(x_start),
+		be(y_start),
+		be(x_end),
+		be(y_end),
+		be(out_width),
+		be(out_height)
 	};
 	return ar1335_write_regs(sensor, regs, ARRAY_SIZE(regs));
 }
@@ -820,42 +540,12 @@ static int ar1335_set_stream(struct ar1335_dev *sensor, bool on)
 
 		// /* Exit LP-11 mode on clock and data lanes */
 		dev_dbg(&sensor->i2c_client->dev, "Exiting LP-11 mode\n");
-		// ret = ar1335_write_reg(sensor, AR1335_REG_HISPI_CONTROL_STATUS, 0);
-		// if (ret) {
-		// 	dev_err(&sensor->i2c_client->dev, "Failed to exit LP-11 mode\n");
-		// 	goto err;
-		// }
+		ret = ar1335_write_reg(sensor, AR1335_REG_HISPI_CONTROL_STATUS, 0);
+		if (ret) {
+			dev_err(&sensor->i2c_client->dev, "Failed to exit LP-11 mode\n");
+			goto err;
+		}
 		
-		// for (cnt = 0; cnt < ARRAY_SIZE(initial_regs2); cnt++) {
-		// 	dev_dbg(&sensor->i2c_client->dev, "Writing extended register set %u\n", cnt);
-		// 	if(initial_regs2[cnt].count==3)
-		// 	{
-		// 		ret = ar1335_write_regs2(sensor, initial_regs2[cnt].data,
-		// 				initial_regs2[cnt].count);
-		// 	}
-		// 	else
-		// 	{
-		// 		ret = ar1335_write_regs(sensor, initial_regs2[cnt].data,
-		// 				initial_regs2[cnt].count);
-		// 	}
-			
-		// 	if (ret) {
-		// 		dev_err(&sensor->i2c_client->dev, "Failed to write initial register set %u\n", cnt);
-		// 		goto err;
-		// 	}
-		//}
-
-		// for (cnt = 0; cnt < ARRAY_SIZE(initial_regs3); cnt++) {
-		// 	dev_dbg(&sensor->i2c_client->dev, "Writing extended register set %u\n", cnt);
-		// 	ret = modify_i2c_register(sensor->i2c_client, initial_regs3[cnt].addr, initial_regs3[cnt].mask, initial_regs3[cnt].val);
-		// 	// ret = ar1335_write_regs(sensor, initial_regs3[cnt].data,
-		// 	// 			initial_regs3[cnt].count);
-		// 	if (ret) {
-		// 		dev_err(&sensor->i2c_client->dev, "Failed to write initial register set %u\n", cnt);
-		// 		goto err;
-		// 	}
-		// }
-
 		/* Start streaming */
 		dev_dbg(&sensor->i2c_client->dev, "Starting streaming\n");
 		ret = ar1335_write_reg(sensor, AR1335_REG_RESET,
@@ -904,61 +594,27 @@ static struct ar1335_res_struct ar1335_res_table[] = {
 	{
 		.width = 1920,
 		.height = 1080,
-	},
-	{
-		.width = 3840,
-		.height = 2160,
 	}
 };
 
 
 static int ar1335_match_resolution(struct v4l2_mbus_framefmt *fmt)
 {
-	s32 w0, h0, mismatch, distance;
-	s32 w1 = fmt->width;
-	s32 h1 = fmt->height;
-	s32 min_distance = INT_MAX;
-	s32 i, idx = -1;
-
-	if (w1 == 0 || h1 == 0)
-		return -1;
-
-	for (i = 0; i < ARRAY_SIZE(ar1335_res_table); i++) {
-		w0 = ar1335_res_table[i].width;
-		h0 = ar1335_res_table[i].height;
-		if (w0 < w1 || h0 < h1)
-			continue;
-		mismatch = abs(w0 * h1 - w1 * h0) * 8192 / w1 / h0;
-
-		if (mismatch > 8192 * AR1335_MAX_RATIO_MISMATCH / 100)
-			continue;
-		distance = (w0 * h1 + w1 * h0) * 8192 / w1 / h1;
-		if (distance < min_distance) {
-			min_distance = distance;
-			idx = i;
-			break;
-		}
-	}
-	return idx;
+	// Only support 1080p
+	fmt->width = 1920;
+	fmt->height = 1080;
+	return 0;
 }
 
 static s32 ar1335_try_mbus_fmt_locked(struct v4l2_subdev *sd,
 				      struct v4l2_mbus_framefmt *fmt)
 {
-	s32 res_num, idx = -1;
-
-	res_num = ARRAY_SIZE(ar1335_res_table);
-
-	if (fmt->width <= ar1335_res_table[res_num - 1].width &&
-	    fmt->height <= ar1335_res_table[res_num - 1].height)
-		idx = ar1335_match_resolution(fmt);
-	if (idx == -1)
-		idx = res_num - 1;
-
-	fmt->width = ar1335_res_table[idx].width;
-	fmt->height = ar1335_res_table[idx].height;
-	return idx;
+	// Only support 1080p (native resolution which is scaled down)
+	fmt->width = 1920;
+	fmt->height = 1080;
+	return 0;
 }
+
 
 static void ar1335_adj_fmt(struct v4l2_mbus_framefmt *fmt)
 {
@@ -1329,17 +985,22 @@ static int ar1335_power_on(struct device *dev)
 		mdelay(1);
 		gpiod_set_value_cansleep(sensor->reset_gpio, 1);
 		mdelay(1);
-	}
-	dev_dbg(dev, "Writing initial regs - Will");
-	// for (cnt = 0; cnt < ARRAY_SIZE(initial_regs2); cnt++) {
-	// 	dev_dbg(dev, "Writing initial register set %u\n", cnt);
-	// 	ret = ar1335_write_regs(sensor, initial_regs2[cnt].data,
-	// 			initial_regs2[cnt].count);
-	// 	if (ret) {
-	// 		dev_err(dev, "Failed to write initial register set %u\n", cnt);
-	// 		goto off;
-	// 	}
-	// }
+}
+		for (cnt = 0; cnt < ARRAY_SIZE(initial_regs); cnt++) {
+			
+			if (initial_regs[cnt].count == 3)
+			{
+				// Support for read-modify-write operations with a bitmask
+				ret = ar1335_read_write_modify(sensor, initial_regs[cnt].data,
+						initial_regs[cnt].count);
+			}
+			else
+			{
+				ret = ar1335_write_regs(sensor, initial_regs[cnt].data,
+						initial_regs[cnt].count);
+			}
+		
+		}
 
 	dev_dbg(dev, "Setting serial format\n");
 	ret = ar1335_write_reg(sensor, AR1335_REG_SERIAL_FORMAT,
@@ -1351,9 +1012,9 @@ static int ar1335_power_on(struct device *dev)
 	}
 
 	dev_dbg(dev, "Setting MIPI test mode\n");
-	// ret = ar1335_write_reg(sensor, AR1335_REG_HISPI_TEST_MODE,
-	// 			   ((0x40 << sensor->lane_count) - 0x40) |
-	// 			   AR1335_REG_HISPI_TEST_MODE_LP11);
+	ret = ar1335_write_reg(sensor, AR1335_REG_HISPI_TEST_MODE,
+				   ((0x40 << sensor->lane_count) - 0x40) |
+				   AR1335_REG_HISPI_TEST_MODE_LP11);
 	if (ret) {
 		dev_err(dev, "Failed to set MIPI test mode\n");
 		goto off;
