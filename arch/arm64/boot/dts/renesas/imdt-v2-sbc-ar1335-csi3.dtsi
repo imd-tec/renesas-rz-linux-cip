@@ -1,13 +1,13 @@
-&i2c6 {
+&i2c5 {
 	#address-cells = <1>;
 	#size-cells = <0>;
 
-	pinctrl-0 = <&i2c6_pins>;
+	pinctrl-0 = <&i2c5_pins>;
 	pinctrl-names = "default";
 
 	status = "okay";
 
-	ar1335_csi22: ar1335_csi22@36 {
+	ar1335_csi23: ar1335_csi23@36 {
 		compatible = "onnn,ar1335";
 		reg = <0x36>;
 		clock-names = "extclk";
@@ -17,17 +17,17 @@
 		vdd-supply = <&reg_1p5v>;
 		
 
-		reset-gpios = <&cam_gpio 10 GPIO_ACTIVE_HIGH>;//CCM1
+		reset-gpios = <&cam_gpio 11 GPIO_ACTIVE_HIGH>;//CCM2
 		port {
-			ar1335_to_csi22: endpoint {
+			ar1335_to_csi23: endpoint {
 				clock-lanes = <0>;
 				data-lanes = <1 2 3 4>;
-				remote-endpoint = <&csi22_in>;
+				remote-endpoint = <&csi23_in>;
 			};
 		};
 	};
 };
-&csi22{
+&csi23 {
     status = "okay";
     ports {
 		#address-cells = <1>;
@@ -35,18 +35,19 @@
 
 		port@0 {
 			reg = <0>;
-			csi22_in: endpoint {
+			csi23_in: endpoint {
 				clock-lanes = <0>;
 				data-lanes = <1 2 3 4>;
-				remote-endpoint = <&ar1335_to_csi22>;
+				remote-endpoint = <&ar1335_to_csi23>;
 			};
 		};
 	};
 };
+
 &cam_gpio {
-	ccm-dis-hog-csi2 {
+    ccm-dis-hog-csi3 {
 			gpio-hog;
-			gpios = <2 GPIO_ACTIVE_LOW>;
+			gpios = <3 GPIO_ACTIVE_LOW>;
 			output-high;
 		};
 	};

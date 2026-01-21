@@ -11,7 +11,6 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-#define DEBUG
 #include <linux/videodev2.h>
 #include <media/v4l2-device.h>
 
@@ -245,6 +244,8 @@ static int ar1335_code_to_bpp(struct ar1335_dev *sensor)
 	switch (sensor->fmt.code) {
 	case MEDIA_BUS_FMT_SRGGB10_1X10:
 		return 10;
+	case MEDIA_BUS_FMT_SGRBG10_1X10:
+		return 10;
 	}
 
 	return -EINVAL;
@@ -472,6 +473,9 @@ static void ar1335_calc_pll(struct ar1335_dev *sensor)
 	sensor->pll.mult = sensor->pll.mult2 = mult;
 
 	dev_dbg(&sensor->i2c_client->dev, "PLL calculated: pre=%u, mult=%u, vco=%u, pixel_clock=%u, vt_pix=%u\n", pre, mult, vco, pixel_clock, sensor->pll.vt_pix);
+	dev_dbg(&sensor->i2c_client->dev, "Operational pixel clock rate: %u Hz\n",
+		vco / (sensor->pll.vt_pix * 2));
+	dev_dbg(&sensor->i2c_client->dev, "VT pixel clock rate: %u Hz\n", vco / sensor->pll.vt_pix);
 }
 
 static int ar1335_pll_config(struct ar1335_dev *sensor)
@@ -515,20 +519,20 @@ static int ar1335_set_stream(struct ar1335_dev *sensor, bool on)
 		}
 
 		// /* Set geometry */
-		// dev_dbg(&sensor->i2c_client->dev, "Setting geometry\n");
-		// ret = ar1335_set_geometry(sensor);
-		// if (ret) {
-		// 	dev_err(&sensor->i2c_client->dev, "Failed to set geometry\n");
-		// 	return ret;
-		// }
+		dev_dbg(&sensor->i2c_client->dev, "Setting geometry\n");
+		ret = ar1335_set_geometry(sensor);
+		if (ret) {
+			dev_err(&sensor->i2c_client->dev, "Failed to set geometry\n");
+			return ret;
+		}
 
-		/* Configure PLL */
-		// dev_dbg(&sensor->i2c_client->dev, "Configuring PLL\n");
-		// ret = ar1335_pll_config(sensor);
-		// if (ret) {
-		// 	dev_err(&sensor->i2c_client->dev, "Failed to configure PLL\n");
-		// 	goto err;
-		// }
+		/* Configure PLL  - This will scale VT Pixel clock with the lane count*/
+		dev_dbg(&sensor->i2c_client->dev, "Configuring PLL\n");
+		ret = ar1335_pll_config(sensor);
+		if (ret) {
+			dev_err(&sensor->i2c_client->dev, "Failed to configure PLL\n");
+			goto err;
+		}
 
 		/* Setup control handler */
 		dev_dbg(&sensor->i2c_client->dev, "Setting up control handler\n");
@@ -681,8 +685,8 @@ static int ar1335_set_fmt(struct v4l2_subdev *sd,
 	sensor->fmt.height = format->format.height;
 	sensor->fmt.field = V4L2_FIELD_NONE;
 
-	if (format->format.code == MEDIA_BUS_FMT_SRGGB10_1X10 ||
-		format->format.code == MEDIA_BUS_FMT_SRGGB8_1X8) {
+	if (format->format.code == MEDIA_BUS_FMT_SGRBG10_1X10 ||
+		format->format.code == MEDIA_BUS_FMT_SGRBG8_1X8) {
 		dev_dbg(&client->dev, "Setting format code to %d\n", format->format.code);
 		sensor->fmt.code = format->format.code;
 	} else {
