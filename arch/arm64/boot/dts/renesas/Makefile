@@ -103,3 +103,4 @@ dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2h-sbc.dtb
 dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-panel.dtb
 dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-hdmi.dtb
 dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-ar1335-csi2.dtb
+dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-ar1335-csi3.dtb
