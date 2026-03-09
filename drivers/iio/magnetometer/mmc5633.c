@@ -721,7 +721,7 @@ static int mmc5633_probe(struct i2c_client *client,
 
 
 	data->trig = devm_iio_trigger_alloc(&client->dev, "%s-dev%d",
-					  indio_dev->name, indio_dev->id);
+					  indio_dev->name, iio_device_id(indio_dev));
 	if (!data->trig)
 		return -ENOMEM;
 
