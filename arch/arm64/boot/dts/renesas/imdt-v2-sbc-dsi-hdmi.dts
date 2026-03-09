@@ -21,6 +21,8 @@
 
 &dsi_adaptor_i2c {
     status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
     adv7533: hdmi@39 {
         compatible = "adi,adv7533";
         reg = <0x39>;
@@ -51,6 +53,10 @@
     };
 };
 
+&du {
+    status = "okay";
+};
+
 &dsi0 {
     status = "okay";
     ports {
@@ -62,7 +68,3 @@
         };
     };
 };
-
-
-
-

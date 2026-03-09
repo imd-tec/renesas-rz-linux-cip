@@ -19,7 +19,7 @@
 	};
 	
 	aliases {
-		serial0 = &scif0;
+		serial0 = &scif;
 		serial1 = &sci0;
 		serial2 = &sci4;
 		serial3 = &sci5;
@@ -34,23 +34,34 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
+
 		global_cma: linux,cma@58000000 {
 			compatible = "shared-dma-pool";
-			reusable;
 			linux,cma-default;
-			reg = <0x0 0x58000000 0x0 0x20000000>;
+			reusable;
+			reg = <0x0 0x58000000 0x0 0x28000000>;
 		};
 
 		mmp_reserved: linux,multimedia {
 			compatible = "shared-dma-pool";
 			reusable;
-			reg = <0x00000000 0x78000000 0x0 0x20000000>;
+			reg = <0x00000000 0x80000000 0x0 0x10000000>;
 		};
 
-		isp: ISP@90000000 {
+		isp_reserved: frame_buffer@90000000 {
 			compatible = "shared-dma-pool";
 			reusable;
-			reg = <0x0 0x98000000 0x0 0x18000000>;
+			reg = <0x0 0x90000000 0x0 0x18000000>;
+		};
+
+		opencva_reserved: OpenCVA@A8000000 {
+			reusable;
+			reg = <0x0 0xA8000000 0x0 0x7D00000>;
+		};
+
+		drp_codec: DRP-Codec@AFD00000 {
+			reusable;
+			reg = <0x0 0xAFD00000 0x0 0x300000>;
 		};
 
 		image_buf0: image_buf@B0000000 {
@@ -60,14 +71,10 @@
 			label = "image_buf0";
 		};
 
-		opencva_reserved: OpenCVA@C0000000 {
+		cru_func: cru_buffer@B4000000 {
+			compatible = "shared-dma-pool";
 			reusable;
-			reg = <0x0 0xC0000000 0x0 0x7D00000>;
-		};
-
-		drp_codec: DRP-Codec@C7D00000 {
-			reusable;
-			reg = <0x0 0xC7D00000 0x0 0x300000>;
+			reg = <0x0 0xB4000000 0x0 0x16400000>;
 		};
 
 		drp_reserved: DRP-AI@240000000 {
@@ -78,6 +85,29 @@
 
 };
 
+&pinctrl{
+
+     usb31_pins: usb31 {
+		ovc {
+			pinmux = <RZG2L_PORT_PINMUX(6, 3, 14)>; /* OVC */
+		};
+
+		vbus {
+			pinmux = <RZG2L_PORT_PINMUX(6, 2, 14)>; /* VBUS */
+		};
+	};
+
+	usb21_pins: usb21 {
+		ovc {
+			pinmux = <RZG2L_PORT_PINMUX(6, 7, 14)>; /* OVC */
+		};
+
+		vbus {
+			pinmux = <RZG2L_PORT_PINMUX(6, 6, 14)>; /* VBUS */
+		};
+	};
+};
+
 &sci0 {
 	pinctrl-0 = <&sci0_pins>;
 	pinctrl-names = "default";
@@ -86,29 +116,27 @@
 
 &pcie1 {
 	vdd-supply = <&VM2M_3V3>;
+	status="disabled";
 };
 
-&xhci1 {
-	pinctrl-0 = <&usb31_pins>;
-	pinctrl-names = "default";
-
-	memory-region = <&global_cma>;
+&usb3_phy1 {
 	status = "okay";
 };
 
-&usb21phyrst {
-	status = "okay";
-};
+// &xhci1 {
+// 	pinctrl-0 = <&usb31_pins>;
+// 	pinctrl-names = "default";
+// 	memory-region = <&global_cma>;
+// 	status = "okay";
+// };
 
 &ohci1 {
 	memory-region = <&global_cma>;
-
 	status = "okay";
 };
 
 &ehci1 {
 	memory-region = <&global_cma>;
-
 	status = "okay";
 };
 
@@ -116,6 +144,16 @@
 	pinctrl-0 = <&usb21_pins>;
 	pinctrl-names = "default";
 
+	status = "okay";
+};
+
+&usb21phyrst {
+	status = "okay";
+};
+
+&usb2_phy1 {
+	pinctrl-0 = <&usb21_pins>;
+	pinctrl-names = "default";
 	status = "okay";
 };
 

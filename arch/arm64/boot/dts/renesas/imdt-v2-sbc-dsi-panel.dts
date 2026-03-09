@@ -29,6 +29,8 @@
 
 &dsi_adaptor_i2c {
 	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
 	touch: gt911@14 {
 		compatible = "goodix,gt911";
 		reg = <0x14>;
@@ -40,21 +42,31 @@
 	};
 };
 
+&du {
+	status = "okay";
+};
+
 &dsi0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
 	panel@0 {
 		compatible = "imdt,im-msc-006";
 		power-supply = <&disp_reg>;
 		reg = <0>;
 		port {
 			panel_in: endpoint {
-			remote-endpoint = <&dsi0_out>;
+				remote-endpoint = <&dsi0_out>;
 			};
 		};
 	};
-};
-
-&dsi0_out {
-	remote-endpoint = <&panel_in>;
-	data-lanes = <1 2 3 4>;
+	ports {
+		port@1 {
+			dsi0_out: endpoint {
+				remote-endpoint = <&panel_in>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+	};
 };
 

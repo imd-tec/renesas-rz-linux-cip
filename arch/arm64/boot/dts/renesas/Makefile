@@ -90,7 +90,12 @@ dtb-$(CONFIG_ARCH_R9A08G045) += r9a08g045s33-smarc.dtb
 dtb-$(CONFIG_ARCH_R9A09G011) += r9a09g011-v2mevk2.dtb
 
 dtb-$(CONFIG_ARCH_R9A09G056) += r9a09g056n48-rzv2n-evk.dtb
+DTC_FLAGS_imdt-v2n-sbc = -@
 dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2n-sbc.dtb
+dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2-sbc-dsi-panel.dtbo
+dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2-sbc-dsi-hdmi.dtbo
+dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2-sbc-ar1335-csi2.dtbo
+dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2-sbc-ar1335-csi3.dtbo
 
 dtb-$(CONFIG_ARCH_R9A09G047) += r9a09g047e57-smarc.dtb
 
@@ -99,8 +104,10 @@ dtb-$(CONFIG_ARCH_R9A09G057) += r9a09g057h44-rzv2h-evk-ver2.dtb
 
 dtb-$(CONFIG_ARCH_RCAR_GEN3) += draak-ebisu-panel-aa104xd12.dtbo
 dtb-$(CONFIG_ARCH_RCAR_GEN3) += salvator-panel-aa104xd12.dtbo
+
+DTC_FLAGS_imdt-v2h-sbc = -@
 dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2h-sbc.dtb
-dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-panel.dtb
-dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-hdmi.dtb
-dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-ar1335-csi2.dtb
-dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-ar1335-csi3.dtb
+dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-panel.dtbo
+dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-hdmi.dtbo
+dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-ar1335-csi2.dtbo
+dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-ar1335-csi3.dtbo
