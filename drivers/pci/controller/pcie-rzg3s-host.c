@@ -30,14 +30,21 @@
 #include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
 #include <linux/regmap.h>
+#include <linux/regulator/consumer.h>
 #include <linux/reset.h>
 #include <linux/sizes.h>
 #include <linux/slab.h>
 #include <linux/units.h>
 #include <linux/kthread.h>
+#include <linux/reboot.h>
 
 #include "../pci.h"
 #include "pcie-rzg3s-regs.h"
+
+#define REGULATOR_DISABLE_SLEEP_TIME_MS	25	/* Chosen to be 25 ms as this is a generous amount of time for a regulator to turn off*/
+#define POST_RESET_SLEEP_TIME_MS	1		/* 1ms sleep to give time for the Reset pin to assert */
+#define CLOCK_STABLE_SLEEP_TIME_MS	700		/* PCIE spec requires that the reset pulse width is at least 100ms
+						   However IMDT have found some devices that need 700ms otherwise they won't come up */
 
 /**
  * struct rzg3s_pcie_msi - RZ/G3S PCIe MSI data structure
@@ -93,7 +100,7 @@ struct rzg3s_pcie_soc_data {
 	int (*reset_deassert)(struct rzg3s_pcie_host *host);
 	int (*reset_assert)(struct rzg3s_pcie_host *host);
 	void (*late_init)(struct rzg3s_pcie_host *host);
-	void (*pre_init)(struct rzg3s_pcie_host *host);
+	int (*pre_init)(struct rzg3s_pcie_host *host);
 	int (*init_phy)(struct rzg3s_pcie_host *host);
 	const char * const *power_resets;
 	const char * const *cfg_resets;
@@ -137,6 +144,8 @@ struct rzg3s_pcie_host {
 	u32 device_id;
 	u32 num_lanes;
 	int channel;
+	struct regulator *vdd;
+	struct notifier_block reboot_nb;
 };
 
 #define rzg3s_msi_to_host(_msi)	container_of(_msi, struct rzg3s_pcie_host, msi)
@@ -994,7 +1003,7 @@ static int rzg3s_pcie_set_max_link_speed(struct rzg3s_pcie_host *host)
 			FIELD_GET(RZG3S_PCI_PCSTAT1_LTSSM_STATE, tmp));
 		return ret;
 	}
-
+	
 	lsp = readl(host->pcie + pcie_cap + PCI_EXP_LNKCAP);
 	lcs = readw(host->pcie + pcie_cap + PCI_EXP_LNKSTA);
 	cs2 = readl(host->axi + RZG3S_PCI_PCSTAT2);
@@ -1228,8 +1237,11 @@ static int rzg3s_pcie_host_init(struct rzg3s_pcie_host *host, bool probe)
 	int ret, err;
 
 	/* Set the prepare init, if any */
-	if (host->data->pre_init)
-		host->data->pre_init(host);
+	if (host->data->pre_init) {
+		ret = host->data->pre_init(host);
+		if (ret)
+			return ret;
+	}
 
 	/* Initialize the PCIe related registers */
 	ret = rzg3s_pcie_config_init(host);
@@ -1508,10 +1520,23 @@ static int rzg3s_soc_pcie_init_phy(struct rzg3s_pcie_host *host)
 	return 0;
 }
 
-static void rzv2h_soc_pcie_pre_init(struct rzg3s_pcie_host *host)
+static int rzv2h_reboot_notifier_cb(struct notifier_block *nb,
+				    unsigned long action, void *data)
+{
+	struct rzg3s_pcie_host *host = container_of(nb, struct rzg3s_pcie_host,
+						    reboot_nb);
+
+	dev_dbg(host->dev, "System reboot requested, disabling M.2 3.3V regulator\n");
+	if (host->vdd)
+		regulator_force_disable(host->vdd);
+
+	return NOTIFY_OK;
+}
+
+static int rzv2h_soc_pcie_pre_init(struct rzg3s_pcie_host *host)
 {
 	struct regmap *sysc = host->sysc;
-
+	int ret;
 	if (host->device_id == 0x003b) {
 		/* Set Lane mode */
 		if (host->num_lanes == 4)
@@ -1535,15 +1560,34 @@ static void rzv2h_soc_pcie_pre_init(struct rzg3s_pcie_host *host)
 			   RZV2H_MODE_PORT_SYS_MASK,
 			   FIELD_PREP(RZV2H_MODE_PORT_SYS_MASK,
 			   RZV2H_MODE_PORT_SYS_RC));
+	/* Disable VDD before asserting reset to guarantee a clean power cycle */
+	if (host->vdd && regulator_is_enabled(host->vdd)) {
+		dev_dbg(host->dev, "%s: Disabling M.2 3.3V regulator\n", __func__);
+		ret = regulator_disable(host->vdd);
+		if (ret)
+			return ret;
+		msleep(REGULATOR_DISABLE_SLEEP_TIME_MS);
+	}
 
-	/* Set to the PCIe reset state : step7 */
+	/* Set to the PCIe reset state : step6 */
 	rzg3s_pcie_update_bits(host->axi, RZV2H_PCI_RESET_REG,
 			       RZV2H_RESET_ALL_ASSERT, 0);
+
+	/* Enable VDD whilst reset is asserted */
+	if (host->vdd) {
+		msleep(POST_RESET_SLEEP_TIME_MS);
+		dev_dbg(host->dev, "Enabling M.2 3.3V regulator\n");
+		ret = regulator_enable(host->vdd);
+		if (ret)
+			return ret;
+	}
 
 	/* Release the PCIe reset : step8 : RST_LOAD_B, RST_CFG_B */
 	rzg3s_pcie_update_bits(host->axi, RZV2H_PCI_RESET_REG,
 			       RZV2H_RESET_LOAD_CFG_RELEASE,
 			       RZV2H_RESET_LOAD_CFG_RELEASE);
+
+	return 0;
 }
 
 static void rzv2h_soc_pcie_late_init(struct rzg3s_pcie_host *host)
@@ -1561,8 +1605,12 @@ static int rzv2h_soc_pcie_reset_deassert(struct rzg3s_pcie_host *host)
 	rzg3s_pcie_update_bits(host->axi, RZV2H_PCI_RESET_REG,
 			       RZV2H_RESET_PS_GP_RELEASE,
 			       RZV2H_RESET_PS_GP_RELEASE);
-	/* Wait for 500 μs or more : step13 */
-	msleep(20);
+	/*
+	 * Wait for clock to stabilise : step13.
+	 * PCIe spec requires ≥100ms reset pulse width. Some devices need up to
+	 * 700ms before they reliably complete link training after reset.
+	 */
+	msleep(CLOCK_STABLE_SLEEP_TIME_MS);
 	/* Release the PCIe reset : step14 : RST_OUT_B, RST_RSM_B */
 	rzg3s_pcie_update_bits(host->axi, RZV2H_PCI_RESET_REG,
 			       RZV2H_RESET_OUT_RSM_RELEASE,
@@ -1600,6 +1648,19 @@ static int rzg3s_soc_pcie_reset_assert(struct rzg3s_pcie_host *host)
 		return ret;
 
 	return 0;
+}
+
+static void rzv2h_pcie_unregister_reboot_notifier(void *data)
+{
+	unregister_reboot_notifier(data);
+}
+
+static void rzv2h_pcie_vdd_disable(void *data)
+{
+	struct regulator *vdd = data;
+
+	if (regulator_is_enabled(vdd))
+		regulator_disable(vdd);
 }
 
 static void rzg3s_pcie_clk_disable(void *data)
@@ -1756,6 +1817,42 @@ static int rzg3s_pcie_probe(struct platform_device *pdev)
 			dev_err(dev, "%pOF: Invalid pcie,channel '%u'\n",
 				np, host->channel);
 			return -EINVAL;
+		}
+
+		/* Optional VDD regulator for downstream PCIe devices (e.g. M.2) */
+		host->vdd = devm_regulator_get_optional(dev, "vdd");
+		if (IS_ERR(host->vdd)) {
+			if (PTR_ERR(host->vdd) == -EPROBE_DEFER)
+				return -EPROBE_DEFER;
+			dev_dbg(dev, "No VDD regulator found, skipping power sequencing\n");
+			host->vdd = NULL;
+		}
+
+		if (host->vdd) {
+			/*
+			 * Register a devm action to disable the regulator on
+			 * device unbind / module removal. The reboot notifier
+			 * covers the system-reboot case; this covers rmmod.
+			 * Registered before host_setup so devm LIFO ordering
+			 * disables the supply after the PCI bus is torn down.
+			 */
+			ret = devm_add_action_or_reset(dev,
+						       rzv2h_pcie_vdd_disable,
+						       host->vdd);
+			if (ret)
+				return ret;
+
+			host->reboot_nb.notifier_call = rzv2h_reboot_notifier_cb;
+			ret = register_reboot_notifier(&host->reboot_nb);
+			if (ret) {
+				dev_err(dev, "Failed to register reboot notifier: %d\n", ret);
+				return ret;
+			}
+			ret = devm_add_action_or_reset(dev,
+						       rzv2h_pcie_unregister_reboot_notifier,
+						       &host->reboot_nb);
+			if (ret)
+				return ret;
 		}
 	}
 
