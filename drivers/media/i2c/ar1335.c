@@ -171,8 +171,6 @@ static const struct initial_reg initial_regs[] = { // 1080P @30fps
     REGS(be(0x0112), be(0x0A0A)), // CCP_DATA_FORMAT
 };
 
-static int modify_i2c_register(struct i2c_client *client, u16 reg, u16 mask, u16 value);
-
 struct ar1335_ctrls {
 	struct v4l2_ctrl_handler handler;
 	struct {
@@ -507,7 +505,7 @@ static int ar1335_pll_config(struct ar1335_dev *sensor)
 
 static int ar1335_set_stream(struct ar1335_dev *sensor, bool on)
 {
-	int ret, cnt;
+	int ret;
 	if (on) {
 		/* Stop streaming for just a moment */
 		dev_dbg(&sensor->i2c_client->dev, "Stopping streaming temporarily\n");
@@ -594,22 +592,6 @@ err:
 	}
 }
 
-static struct ar1335_res_struct ar1335_res_table[] = {
-	{
-		.width = 1920,
-		.height = 1080,
-	}
-};
-
-
-static int ar1335_match_resolution(struct v4l2_mbus_framefmt *fmt)
-{
-	// Only support 1080p
-	fmt->width = 1920;
-	fmt->height = 1080;
-	return 0;
-}
-
 static s32 ar1335_try_mbus_fmt_locked(struct v4l2_subdev *sd,
 				      struct v4l2_mbus_framefmt *fmt)
 {
@@ -635,7 +617,7 @@ static void ar1335_adj_fmt(struct v4l2_mbus_framefmt *fmt)
 }
 
 static int ar1335_get_fmt(struct v4l2_subdev *sd,
-			  struct v4l2_subdev_pad_config *cfg,
+			  struct v4l2_subdev_state *sd_state,
 			  struct v4l2_subdev_format *format)
 {
 	struct v4l2_mbus_framefmt *fmt = &format->format;
@@ -653,7 +635,7 @@ static int ar1335_get_fmt(struct v4l2_subdev *sd,
 }
 
 static int ar1335_set_fmt(struct v4l2_subdev *sd,
-			  struct v4l2_subdev_pad_config *cfg,
+			  struct v4l2_subdev_state *sd_state,
 			  struct v4l2_subdev_format *format)
 {
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
@@ -670,9 +652,6 @@ static int ar1335_set_fmt(struct v4l2_subdev *sd,
 	if (format->which == V4L2_SUBDEV_FORMAT_TRY) {
 		dev_dbg(&client->dev, "Trying format\n");
 		ar1335_try_mbus_fmt_locked(sd, fmt);
-		#ifdef V4L2_SUBDEV_PAD_CONFIG_HAS_TRY_FMT
-		cfg->try_fmt = *fmt;
-		#endif
 
 		mutex_unlock(&sensor->lock);
 		return 0;
@@ -906,55 +885,6 @@ free_ctrls:
 }
 
 
-static int modify_i2c_register(struct i2c_client *client, u16 reg, u16 mask, u16 value) {
-    int ret;
-    u8 buf[4]; // 2 bytes for address, 2 bytes for data
-    struct i2c_msg msgs[2];
-    u16 current_value;
-    
-    // Step 1: Read current value from register
-    buf[0] = reg >> 8;  // High byte of register address
-    buf[1] = reg & 0xFF; // Low byte of register address
-    
-    msgs[0].addr  = client->addr;
-    msgs[0].flags = 0;
-    msgs[0].len   = 2;
-    msgs[0].buf   = buf;
-    
-    msgs[1].addr  = client->addr;
-    msgs[1].flags = I2C_M_RD;
-    msgs[1].len   = 2;
-    msgs[1].buf   = (u8 *)&current_value;
-    
-    ret = i2c_transfer(client->adapter, msgs, 2);
-    if (ret < 0) {
-        dev_err(&client->dev, "Failed to read register 0x%04X\n", reg);
-        return ret;
-    }
-
-    current_value = be16_to_cpu(current_value); // Convert from big-endian
-
-    // Step 2: Modify only the necessary bits
-    current_value = (current_value & ~mask) | (value & mask);
-
-    // Step 3: Write the modified value back to the register
-    buf[2] = current_value >> 8;  // High byte of new value
-    buf[3] = current_value & 0xFF; // Low byte of new value
-    
-    msgs[0].flags = 0;
-    msgs[0].len   = 4;
-    msgs[0].buf   = buf;
-
-    ret = i2c_transfer(client->adapter, msgs, 1);
-    if (ret < 0) {
-        dev_err(&client->dev, "Failed to write register 0x%04X\n", reg);
-        return ret;
-    }
-
-    return 0;
-}
-
-
 static int ar1335_power_off(struct device *dev)
 {
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
@@ -1042,7 +972,7 @@ off:
 }
 
 static int ar1335_enum_mbus_code(struct v4l2_subdev *sd,
-				 struct v4l2_subdev_pad_config *cfg,
+				 struct v4l2_subdev_state *sd_state,
 				 struct v4l2_subdev_mbus_code_enum *code)
 {
 	struct ar1335_dev *sensor = to_ar1335_dev(sd);
@@ -1057,7 +987,7 @@ static int ar1335_enum_mbus_code(struct v4l2_subdev *sd,
 }
 
 static int ar1335_enum_frame_size(struct v4l2_subdev *sd,
-				  struct v4l2_subdev_pad_config *cfg,
+				  struct v4l2_subdev_state *sd_state,
 				  struct v4l2_subdev_frame_size_enum *fse)
 {
 
@@ -1103,57 +1033,10 @@ static int ar1335_enum_frame_size(struct v4l2_subdev *sd,
 // 	return ret;
 // }
 
-static int ar1335_set_frame_interval(struct v4l2_subdev *sd,
-				     struct v4l2_subdev_pad_config *cfg,
-				     struct v4l2_subdev_frame_interval *ival)
-{
-	struct ar1335_dev *sensor = to_ar1335_dev(sd);
-	struct v4l2_fract *tpf = &ival->interval;
-
-	if (tpf->numerator == 0 || tpf->denominator == 0 ||
-		(tpf->denominator > tpf->numerator * MAX_FRAME_RATE)) {
-			/* Reset to max frame rate */
-			tpf->numerator = 1;
-			tpf->denominator = MAX_FRAME_RATE;
-	}
-
-	sensor->frame_rate.numerator = tpf->numerator;
-
-	if (tpf->numerator == 30) {
-		ar1335_write_reg(sensor, 0x340, 0xC4E);
-		ar1335_write_reg(sensor, 0x202, 0xC4E);
-		sensor->frame_rate.denominator = tpf->denominator;
-	} else if (tpf->numerator == 60) {
-		ar1335_write_reg(sensor, 0x340, 0x626);
-		ar1335_write_reg(sensor, 0x202, 0x5E8);
-		sensor->frame_rate.denominator = tpf->denominator;
-	} else {
-		ar1335_write_reg(sensor, 0x340, 0xC4E);
-		ar1335_write_reg(sensor, 0x202, 0xC4E);
-		sensor->frame_rate.denominator = MIN_FRAME_RATE;
-	}
-
-	return 0;
-}
-
-static int ar1335_get_frame_interval(struct v4l2_subdev *sd,
-				     struct v4l2_subdev_pad_config *cfg,
-				     struct v4l2_subdev_frame_interval *interval)
-{
-	struct ar1335_dev *sensor = to_ar1335_dev(sd);
-
-	mutex_lock(&sensor->lock);
-	interval->interval.denominator = sensor->frame_rate.denominator;
-	interval->interval.numerator = sensor->frame_rate.numerator;
-	mutex_unlock(&sensor->lock);
-
-	return 0;
-}
-
 static int ar1335_s_stream(struct v4l2_subdev *sd, int enable)
 {
 	struct ar1335_dev *sensor = to_ar1335_dev(sd);
-	int ret, cnt;
+	int ret;
 
 	// if (!(flags & V4L2_SUBDEV_PRE_STREAMON_FL_MANUAL_LP))
 	// // 	return -EACCES;
@@ -1175,7 +1058,6 @@ static int ar1335_s_stream(struct v4l2_subdev *sd, int enable)
 	ret = ar1335_set_stream(sensor, enable);
 	mutex_unlock(&sensor->lock);
 
-err:
 	return ret;
 }
 
@@ -1228,7 +1110,6 @@ static int ar1335_probe(struct i2c_client *client,
 	struct ar1335_dev *sensor;
 	unsigned int cnt;
 	int ret;
-	static int num_defer = 0;
 
 	dev_info(dev, "Starting AR1335 probe\n");
 	// if (num_defer<10)
@@ -1365,7 +1246,7 @@ entity_cleanup:
 	return ret;
 }
 
-static int ar1335_remove(struct i2c_client *client)
+static void ar1335_remove(struct i2c_client *client)
 {
 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
 	struct ar1335_dev *sensor = to_ar1335_dev(sd);
@@ -1374,7 +1255,6 @@ static int ar1335_remove(struct i2c_client *client)
 	media_entity_cleanup(&sensor->sd.entity);
 	v4l2_ctrl_handler_free(&sensor->ctrls.handler);
 	mutex_destroy(&sensor->lock);
-	return 0;
 }
 
 static const struct of_device_id ar1335_id[] = {

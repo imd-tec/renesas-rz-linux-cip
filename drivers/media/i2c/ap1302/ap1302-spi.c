@@ -214,9 +214,8 @@ static int ap1302_spi_probe(struct spi_device *spi)
 	return 0;
 }
 
-static int ap1302_spi_remove(struct spi_device *spi)
+static void ap1302_spi_remove(struct spi_device *spi)
 {
-	return 0;
 }
 
 int ap1302_register_spi_driver(struct ap1302_device *ap1302)
