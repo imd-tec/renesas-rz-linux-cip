@@ -100,6 +100,16 @@
 		regulator-always-on;
 	};
 
+	disp_reg: regulator7 {
+		compatible = "regulator-fixed";
+
+		regulator-name = "dsi-panel-3.3V";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		enable-active-high;
+		gpio = <&pinctrl RZG2L_GPIO(10, 5) GPIO_ACTIVE_HIGH>;
+	};
+
 	vccq_sdhi0: regulator-vccq-sdhi0 {
 		compatible = "regulator-gpio";
 

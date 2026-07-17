@@ -5,19 +5,6 @@
 #include <dt-bindings/pinctrl/rzg2l-pinctrl.h>
 #include <dt-bindings/gpio/gpio.h>
 
-/ {
-
-	disp_reg: dsi0_display_3v3 {
-    	compatible = "regulator-fixed";
-		regulator-name = "dsi0 disp regulator";
-		regulator-min-microvolt = <3300000>;  // Minimum voltage in microvolts
-		regulator-max-microvolt = <3300000>;  // Maximum voltage in microvolts
-
-		enable-active-high;                  // Optional, indicates the GPIO is active high
-		gpio = <&pinctrl RZG2L_GPIO(10, 5) GPIO_ACTIVE_HIGH>;
-	};
-};
-
 &pinctrl {
 	disp_bl_en {
 		gpio-hog;
@@ -69,4 +56,3 @@
 		};
 	};
 };
-

@@ -4614,7 +4614,7 @@ static const struct panel_desc_dsi osd101t2045_53ts = {
 	.lanes = 4,
 };
 static const struct drm_display_mode imdt_im_msc_006_mode = {
-	.clock = 51200,
+	.clock = 51250,
 	.hdisplay = 1024,
 	.hsync_start = 1024 + 160,
 	.hsync_end = 1024 + 160 + 12,
