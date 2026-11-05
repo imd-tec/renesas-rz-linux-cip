@@ -94,6 +94,7 @@ DTC_FLAGS_imdt-v2n-sbc = -@
 dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2n-sbc.dtb
 dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2-sbc-dsi-panel.dtbo
 dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2-sbc-dsi-hdmi.dtbo
+dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2-sbc-dsi-lt8912b.dtbo
 dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2-sbc-ar1335-csi2.dtbo
 dtb-$(CONFIG_ARCH_R9A09G056) += imdt-v2-sbc-ar1335-csi3.dtbo
 
@@ -109,5 +110,6 @@ DTC_FLAGS_imdt-v2h-sbc = -@
 dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2h-sbc.dtb
 dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-panel.dtbo
 dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-hdmi.dtbo
+dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-dsi-lt8912b.dtbo
 dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-ar1335-csi2.dtbo
 dtb-$(CONFIG_ARCH_R9A09G057) += imdt-v2-sbc-ar1335-csi3.dtbo
