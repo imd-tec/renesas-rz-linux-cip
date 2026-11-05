@@ -15,6 +15,7 @@
 #include <linux/media-bus-format.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
+#include <linux/of_device.h>
 #include <linux/of_graph.h>
 #include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
@@ -873,7 +874,7 @@ static int lt9611c_probe(struct i2c_client *client, const struct i2c_device_id *
 
 	lt9611c->dev = dev;
 	lt9611c->client = client;
-	lt9611c->chip_type = id->driver_data;
+	lt9611c->chip_type = (enum lt9611_chip_type)(uintptr_t)of_device_get_match_data(dev);
 	mutex_init(&lt9611c->ocm_lock);
 	INIT_WORK(&lt9611c->work, lt9611c_hpd_work);
 
@@ -1000,16 +1001,17 @@ static void lt9611c_remove(struct i2c_client *client)
 
 static struct i2c_device_id lt9611c_id[] = {
 	/* chip_type */
-	{ "lontium,lt9611c", CHIP_LT9611C },
-	{ "lontium,lt9611ex", CHIP_LT9611EX },
-	{ "lontium,lt9611uxd", CHIP_LT9611UXD },
+	{ "lt9611c", CHIP_LT9611C },
+	{ "lt9611ex", CHIP_LT9611EX },
+	{ "lt9611uxd", CHIP_LT9611UXD },
 	{ /* sentinel */ }
 };
+MODULE_DEVICE_TABLE(i2c, lt9611c_id);
 
 static const struct of_device_id lt9611c_match_table[] = {
-	{ .compatible = "lontium,lt9611c" },
-	{ .compatible = "lontium,lt9611ex" },
-	{ .compatible = "lontium,lt9611uxd" },
+	{ .compatible = "lontium,lt9611c", .data = (void *)CHIP_LT9611C },
+	{ .compatible = "lontium,lt9611ex", .data = (void *)CHIP_LT9611EX },
+	{ .compatible = "lontium,lt9611uxd", .data = (void *)CHIP_LT9611UXD },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, lt9611c_match_table);
