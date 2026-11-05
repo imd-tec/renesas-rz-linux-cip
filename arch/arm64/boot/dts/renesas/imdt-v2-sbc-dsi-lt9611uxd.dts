@@ -24,7 +24,7 @@
 	#size-cells = <0>;
 
 	lt9611uxd: hdmi@49 {
-		compatible = "lontium,lt9611uxc";
+		compatible = "lontium,lt9611uxd";
 		reg = <0x49>;
 		interrupt-parent = <&pinctrl>;
 		interrupts = <RZG2L_GPIO(7, 1) IRQ_TYPE_EDGE_FALLING>;
