@@ -1,6 +1,7 @@
 /dts-v1/;
 /plugin/;
 
+#include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/pinctrl/rzg2l-pinctrl.h>
 #include <dt-bindings/gpio/gpio.h>
 
@@ -11,14 +12,10 @@
 
 		port {
 			hdmi_con_out: endpoint {
-				remote-endpoint = <&lt8912b_out>;
+				remote-endpoint = <&lt9611uxd_out>;
 			};
 		};
 	};
-};
-
-&disp_reg {
-	regulator-always-on;
 };
 
 &dsi_adaptor_i2c {
@@ -26,10 +23,12 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 
-	lt8912b: hdmi@48 {
-		compatible = "lontium,lt8912b";
-		reg = <0x48>;
-		reset-gpios = <&pinctrl RZG2L_GPIO(7, 2) GPIO_ACTIVE_LOW>;
+	lt9611uxd: hdmi@49 {
+		compatible = "lontium,lt9611uxc";
+		reg = <0x49>;
+		interrupt-parent = <&pinctrl>;
+		interrupts = <RZG2L_GPIO(7, 1) IRQ_TYPE_EDGE_FALLING>;
+		reset-gpios = <&pinctrl RZG2L_GPIO(7, 2) GPIO_ACTIVE_HIGH>;
 
 		ports {
 			#address-cells = <1>;
@@ -37,15 +36,14 @@
 
 			port@0 {
 				reg = <0>;
-				lt8912b_in: endpoint {
-					data-lanes = <1 2 3 4>;
+				lt9611uxd_in: endpoint {
 					remote-endpoint = <&dsi0_out>;
 				};
 			};
 
-			port@1 {
-				reg = <1>;
-				lt8912b_out: endpoint {
+			port@2 {
+				reg = <2>;
+				lt9611uxd_out: endpoint {
 					remote-endpoint = <&hdmi_con_out>;
 				};
 			};
@@ -62,7 +60,7 @@
 	ports {
 		port@1 {
 			dsi0_out: endpoint {
-				remote-endpoint = <&lt8912b_in>;
+				remote-endpoint = <&lt9611uxd_in>;
 				data-lanes = <1 2 3 4>;
 			};
 		};
