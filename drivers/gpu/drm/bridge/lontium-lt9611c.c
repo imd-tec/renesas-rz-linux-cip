@@ -547,6 +547,10 @@ static enum drm_mode_status lt9611c_check_clock(struct lt9611c *lt9611c,
 	if (tmds_rate < 25000000)
 		return MODE_CLOCK_LOW;
 
+	/* One 4-lane port tops out at 4K30 */
+	if (!lt9611c->dsi1_node && mode->clock > 297000)
+		return MODE_CLOCK_HIGH;
+
 	return MODE_OK;
 }
 
@@ -743,9 +747,36 @@ static void lt9611c_bridge_mode_set(struct drm_bridge *bridge,
 	drm_mode_copy(&lt9611c->mode, adj_mode);
 }
 
+/* WM1 port mode: bit 7 and bit 5 take the left and right half from port B */
+#define LT9611C_PORT_MODE_A	0x40
+#define LT9611C_PORT_MODE_AB	0x70
+
+static void lt9611c_set_ports(struct lt9611c *lt9611c)
+{
+	u8 cmd[6] = { 0x57, 0x4d, 0x31, 0x3a, 0x01, LT9611C_PORT_MODE_A };
+	u8 ret_buf[5];
+	int ret;
+
+	if (lt9611c->dsi1_node) {
+		cmd[4] = 0x02;
+		cmd[5] = LT9611C_PORT_MODE_AB;
+	}
+
+	mutex_lock(&lt9611c->ocm_lock);
+	ret = lt9611c_read_write_flow(lt9611c, cmd, ARRAY_SIZE(cmd),
+				      ret_buf, ARRAY_SIZE(ret_buf));
+	mutex_unlock(&lt9611c->ocm_lock);
+	if (ret || !ret_buf[4])
+		dev_warn(lt9611c->dev, "port select failed: %d\n", ret);
+}
+
 static void lt9611c_bridge_pre_enable(struct drm_bridge *bridge)
 {
-	lt9611c_reset(bridge_to_lt9611c(bridge));
+	struct lt9611c *lt9611c = bridge_to_lt9611c(bridge);
+
+	/* The reset drops the port mode, so set it again before DSI starts */
+	lt9611c_reset(lt9611c);
+	lt9611c_set_ports(lt9611c);
 }
 
 static void lt9611c_bridge_enable(struct drm_bridge *bridge)
