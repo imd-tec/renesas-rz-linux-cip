@@ -140,6 +140,7 @@ struct rcar_gen3_chan {
 	bool soc_no_adp_ctrl;
 	bool utmi_ctrl;
 	bool otg_internal_reg;
+	bool otg_role_known;
 };
 
 struct rcar_gen3_phy_drv_data {
@@ -223,6 +224,7 @@ static void rcar_gen3_phy_usb2_set_vbus(struct rcar_gen3_chan *ch,
 static void rcar_gen3_enable_vbus_ctrl(struct rcar_gen3_chan *ch, int vbus)
 {
 	if (ch->otg_internal_reg) {
+		ch->otg_role_known = true;
 		regulator_hardware_enable(ch->vbus, vbus);
 		return;
 	}
@@ -764,6 +766,13 @@ static int rcar_gen3_phy_usb2_regulator_endisable(struct regulator_dev *rdev,
 	struct rcar_gen3_chan *channel = rdev_get_drvdata(rdev);
 	struct device *dev = channel->dev;
 	int ret;
+
+	/*
+	 * The regulator is enabled at probe, before the OTG role is known.
+	 * Keep VBUS off until then, so a USB device never drives it.
+	 */
+	if (enable && !channel->otg_role_known)
+		return 0;
 
 	ret = pm_runtime_resume_and_get(dev);
 	if (ret < 0) {
